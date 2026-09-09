@@ -1,42 +1,57 @@
 name: media_editor
 description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-version: 1.0.0+1
+version: 0.1.0
 
 repository: https://github.com/ThanCoder/media_editor.git
 
 environment:
-  sdk: ^3.12.0
+  sdk: ^3.13.0
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  ffmpeg_kit_extended_flutter: ^0.6.0
+  ffmpeg_kit_extended_flutter: ^0.6.2
   than_pkg_linux: ^0.2.0
   cfb_store: ^0.7.0
-  dart_core_extensions: ^0.5.0
-  t_widgets:
-    path: /home/thancoder/projects/dart_plugins/t_widgets
-  than_pkg_android: ^0.6.1
+  dart_core_extensions: ^0.6.0
   file_picker: ^12.0.0
   desktop_drop: ^0.8.0
   file_type_plus: ^1.1.0
+  package_info_plus: ^10.2.1
+  t_widgets:
+    git: https://github.com/ThanCoder/t_widgets.git
+  than_pkg_android:
+    git: https://github.com/ThanCoder/than_pkg_android.git
+  path_provider: ^2.1.6
+
+# flutter pub upgrade than_pkg_android t_widgets
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  change_app_package_name: ^1.5.0
+  # dart run change_app_package_name:main [com.new.package.name]
+  # dart run change_app_package_name:main than.app.novl3.v5
+  flutter_launcher_icons: ^0.14.4
+  # dart run flutter_launcher_icons
+
+  # dev lib
+flutter_launcher_icons:
+  android: "launcher_icon"
+  image_path: "assets/logo/logo.png"
 flutter:
   uses-material-design: true
-
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+  - assets/logo/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
 
 ffmpeg_kit_extended_config:
-  type: "video" # pre-bundled builds: debug, base, full, audio, video, video_hw
+  type: "base" # pre-bundled builds: debug, base, full, audio, video, video_hw
   gpl: false # enable to include GPL libraries. x
   small: true # enable to use smaller builds
   # == OR ==
@@ -47,9 +62,8 @@ ffmpeg_kit_extended_config:
   # Example:
   # windows: "path/to/ffmpeg-kit/libraries"
   # ios: "https://path/to/bundle.xcframework.zip"
-  android: /home/thancoder/Downloads/ffmpeg_kit_extended_flutter/0.11.0/android/bundle-base-shared-small-lgpl-release.aar
-  linux: /home/thancoder/Downloads/ffmpeg_kit_extended_flutter/0.11.0/linux/bundle-base-linux-x86_64-shared-small-gpl.zip
-
+  android: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-base-shared-small-lgpl-release.aar
+  # linux: /home/thancoder/Downloads/ffmpeg_kit_extended_flutter/0.11.0/linux/bundle-base-linux-x86_64-shared-small-gpl.zip
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a

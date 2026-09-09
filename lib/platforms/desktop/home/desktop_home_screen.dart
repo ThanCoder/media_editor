@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:media_editor/platforms/desktop/home/desktop_home_page.dart';
+import 'package:media_editor/platforms/desktop/platform_home_page.dart';
 import 'package:media_editor/platforms/pages/more_page.dart';
 
 class DesktopHomeScreen extends StatefulWidget {
@@ -30,7 +30,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
           Expanded(
             child: IndexedStack(
               index: selectedIndex,
-              children: [DesktopHomePage(), MorePage()],
+              children: [PlatformHomePage(), MorePage()],
             ),
           ),
         ],
