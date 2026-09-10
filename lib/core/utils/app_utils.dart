@@ -14,7 +14,7 @@ class AppUtils {
   AppUtils._();
   factory AppUtils() => instance;
 
-  final recentConfig = CFBStore();
+  final config = CFBStore();
   late Directory _cacheDir;
   late Directory _configDir;
   late Directory _downloadDir;
@@ -34,9 +34,7 @@ class AppUtils {
     _configDir = await getApplicationSupportDirectory();
     if (Platform.isAndroid) {
       _downloadDir = Directory(
-        ThanPkgAndroid.getInstance.pathHandler.getDownloadPath().join(
-          appName,
-        ),
+        ThanPkgAndroid.getInstance.pathHandler.getDownloadPath().join(appName),
       );
     } else {
       final downloadDir = await getDownloadsDirectory();
