@@ -24,11 +24,22 @@ class _AndroidVideoChooserPageState extends State<AndroidVideoChooserPage> {
   final pkg = ThanPkgAndroid.getInstance.mediaSelector;
 
   List<MediaFile> list = [];
+  Map<String, List<MediaFile>> parentList = {};
+  String currentParent = 'All';
   Future<void> init() async {
     list = await pkg.fetchVideos();
     list.sortDate();
+    parentList.clear();
+
+    for (var file in list) {
+      parentList
+          .putIfAbsent(file.path.pathBuf.parent.fileName, () => [])
+          .add(file);
+    }
     setState(() {});
   }
+
+  ColorScheme get col => Theme.of(context).colorScheme;
 
   @override
   Widget build(BuildContext context) {
@@ -39,15 +50,64 @@ class _AndroidVideoChooserPageState extends State<AndroidVideoChooserPage> {
   }
 
   Widget get body {
-    return GridView.builder(
-      itemCount: list.length,
-      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 200,
-        mainAxisExtent: 220,
-        mainAxisSpacing: 4,
-        crossAxisSpacing: 4,
+    var resList = list;
+    if (currentParent == 'All') {
+      resList = list;
+    } else {
+      resList = parentList[currentParent] ?? [];
+    }
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _chooserWidget),
+        SliverPadding(
+          padding: .symmetric(vertical: 10, horizontal: 12),
+          sliver: SliverGrid.builder(
+            itemCount: resList.length,
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
+              mainAxisExtent: 220,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+            ),
+            itemBuilder: (context, index) => _listItem(resList[index]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget get _chooserWidget {
+    return Padding(
+      padding: .symmetric(vertical: 8, horizontal: 12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: col.surfaceContainer,
+          borderRadius: .circular(15),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            borderRadius: .circular(15),
+            padding: .symmetric(vertical: 8, horizontal: 10),
+            dropdownColor: col.surfaceContainer,
+            value: currentParent,
+            items: [
+              DropdownMenuItem<String>(value: 'All', child: Text('All')),
+              ...parentList.entries.map(
+                (e) => DropdownMenuItem<String>(
+                  value: e.key,
+                  child: Text('${e.key.capitalize} ${e.value.length}'),
+                ),
+              ),
+            ],
+            onChanged: (value) {
+              setState(() {
+                currentParent = value!;
+              });
+            },
+          ),
+        ),
       ),
-      itemBuilder: (context, index) => _listItem(list[index]),
     );
   }
 
@@ -63,7 +123,13 @@ class _AndroidVideoChooserPageState extends State<AndroidVideoChooserPage> {
             Expanded(
               child: VideoThumbnail(file: file, cachePath: widget.cachePath),
             ),
-            Text(file.name),
+            Text(
+              file.name,
+              maxLines: 2,
+              overflow: .ellipsis,
+              textAlign: .center,
+              style: TextStyle(fontSize: 12),
+            ),
           ],
         ),
       ),

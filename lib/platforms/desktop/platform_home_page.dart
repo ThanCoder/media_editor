@@ -26,17 +26,20 @@ class _PlatformHomePageState extends State<PlatformHomePage> {
   }
 
   Widget _header() {
-    return Wrap(
-      children: [
-        FilledButton(
-          onPressed: () {
-            context.pushMaterialPageRoute(
-              builder: (mainCtx) => VideoToAudioPage(),
-            );
-          },
-          child: Text('Video To Audio'),
-        ),
-      ],
+    return Center(
+      child: Wrap(
+        children: [
+          FilledButton.icon(
+            onPressed: () {
+              context.pushMaterialPageRoute(
+                builder: (mainCtx) => VideoToAudioPage(),
+              );
+            },
+            icon: Icon(Icons.video_file_outlined),
+            label: Text('Video To Audio'),
+          ),
+        ],
+      ),
     );
   }
 }

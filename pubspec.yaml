@@ -53,7 +53,7 @@ flutter:
 ffmpeg_kit_extended_config:
   type: "base" # pre-bundled builds: debug, base, full, audio, video, video_hw
   gpl: false # enable to include GPL libraries. x
-  small: true # enable to use smaller builds
+  # small: true # enable to use smaller builds
   # == OR ==
   # -------------------------------------------------------------
   # You can specify remote or local path to libffmpegkit libraries for each platform
@@ -62,8 +62,8 @@ ffmpeg_kit_extended_config:
   # Example:
   # windows: "path/to/ffmpeg-kit/libraries"
   # ios: "https://path/to/bundle.xcframework.zip"
-  android: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-base-shared-small-lgpl-release.aar
-  # linux: /home/thancoder/Downloads/ffmpeg_kit_extended_flutter/0.11.0/linux/bundle-base-linux-x86_64-shared-small-gpl.zip
+  android: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-base-shared-gpl-release.aar
+  linux: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-base-linux-x86_64-shared-gpl.zip
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
