@@ -54,12 +54,6 @@ class AppUtils {
     await savedCommandStore.open(
       getPlatfromExternalConfigPath('saved.command.store.cfb'),
     );
-    savedCommandStore.stream.saveError.listen((event) {
-      print('[savedCommandStore]: $event');
-    });
-    savedCommandStore.stream.putError.listen((event) {
-      print('[savedCommandStore]: $event');
-    });
   }
 
   String getCachePath([String? name]) {
