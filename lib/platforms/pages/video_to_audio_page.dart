@@ -164,7 +164,7 @@ class _VideoToAudioPageState extends State<VideoToAudioPage> {
         ],
       ],
     );
-    print('command: ${builder.command}');
+    // print('command: ${builder.command}');
     context.pushMaterialPageRoute(
       builder: (mainCtx) => FfmpegProcessPage(command: builder.command),
     );

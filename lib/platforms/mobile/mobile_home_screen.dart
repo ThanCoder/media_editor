@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:media_editor/platforms/desktop/platform_home_page.dart';
+import 'package:media_editor/platforms/pages/platform_home_page.dart';
 import 'package:media_editor/platforms/pages/more_page.dart';
 
 class MobileHomeScreen extends StatefulWidget {

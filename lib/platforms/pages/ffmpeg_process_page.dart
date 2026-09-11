@@ -54,6 +54,9 @@ class _FfmpegProcessPageState extends State<FfmpegProcessPage> {
           if (ReturnCode.isSuccess(returnCode)) {
             // print("Command success");
             logList.add("Command success");
+
+            logList.add('command: ${widget.command}');
+            con.add('');
             if (!mounted) return;
             showSuccessDialog(context, 'Command success');
             con.add('');

@@ -35,3 +35,29 @@ Future<String?> chooseVideoFromPlatform(BuildContext context) async {
 
   return res.path;
 }
+
+Future<String?> chooseMediaFileFromPlatform(BuildContext context) async {
+  if (Platform.isAndroid) {
+    final pkg = ThanPkgAndroid.getInstance.storagePermissionHandler;
+    if (!await pkg.isStoragePermissionGranted()) {
+      await pkg.requestStoragePermission();
+      return null;
+    }
+    if (!context.mounted) return null;
+    return await context.pushMaterialPageRoute(
+      builder: (mainCtx) =>
+          AndroidVideoChooserPage(cachePath: AppUtils.instance.getCachePath()),
+    );
+  }
+
+  // linux
+  final res = await FilePicker.pickFile(
+    dialogTitle: 'Choose video File',
+    initialDirectory: _initialDirectory,
+    type: .any,
+  );
+  if (res == null) return null;
+  _initialDirectory = res.path!.pathBuf.parentPath;
+
+  return res.path;
+}

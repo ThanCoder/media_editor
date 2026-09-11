@@ -15,6 +15,7 @@ class AppUtils {
   factory AppUtils() => instance;
 
   final config = CFBStore();
+  final savedCommandStore = CFBStore();
   late Directory _cacheDir;
   late Directory _configDir;
   late Directory _downloadDir;
@@ -50,6 +51,15 @@ class AppUtils {
         pkg.getDeviceStoragePath().join('.${info.packageName}'),
       );
     }
+    await savedCommandStore.open(
+      getPlatfromExternalConfigPath('saved.command.store.cfb'),
+    );
+    savedCommandStore.stream.saveError.listen((event) {
+      print('[savedCommandStore]: $event');
+    });
+    savedCommandStore.stream.putError.listen((event) {
+      print('[savedCommandStore]: $event');
+    });
   }
 
   String getCachePath([String? name]) {
