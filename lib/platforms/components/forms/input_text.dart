@@ -12,6 +12,8 @@ class InputText extends StatelessWidget {
     this.suffixIcon,
     this.focusNode,
     this.hint,
+    this.style,
+    this.onTapOutside,
   });
   final TextEditingController controller;
   final int? maxLines;
@@ -22,6 +24,8 @@ class InputText extends StatelessWidget {
   final Widget? suffixIcon;
   final FocusNode? focusNode;
   final Widget? hint;
+  final TextStyle? style;
+  final void Function(PointerDownEvent event)? onTapOutside;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +33,7 @@ class InputText extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       maxLines: maxLines,
+      style: style,
       decoration: InputDecoration(
         label: label,
         border: OutlineInputBorder(borderRadius: .circular(6)),
@@ -38,6 +43,7 @@ class InputText extends StatelessWidget {
       ),
       onChanged: onChanged,
       onSubmitted: onSubmitted,
+      onTapOutside: onTapOutside,
     );
   }
 }

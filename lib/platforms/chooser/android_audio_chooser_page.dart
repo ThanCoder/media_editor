@@ -1,20 +1,18 @@
-import 'dart:io';
-
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg_android/than_pkg_android.dart';
 
-class AndroidVideoChooserPage extends StatefulWidget {
+class AndroidAudioChooserPage extends StatefulWidget {
   const new({super.key, required this.cachePath});
   final String cachePath;
 
   @override
-  State<AndroidVideoChooserPage> createState() =>
-      _AndroidVideoChooserPageState();
+  State<AndroidAudioChooserPage> createState() =>
+      _AndroidAudioChooserPageState();
 }
 
-class _AndroidVideoChooserPageState extends State<AndroidVideoChooserPage> {
+class _AndroidAudioChooserPageState extends State<AndroidAudioChooserPage> {
   @override
   void initState() {
     init();
@@ -27,7 +25,7 @@ class _AndroidVideoChooserPageState extends State<AndroidVideoChooserPage> {
   Map<String, List<MediaFile>> parentList = {};
   String currentParent = 'All';
   Future<void> init() async {
-    list = await pkg.fetchVideos();
+    list = await pkg.fetchAudio();
     list.sortDate();
     parentList.clear();
 
@@ -62,14 +60,9 @@ class _AndroidVideoChooserPageState extends State<AndroidVideoChooserPage> {
         SliverToBoxAdapter(child: _chooserWidget),
         SliverPadding(
           padding: .symmetric(vertical: 10, horizontal: 12),
-          sliver: SliverGrid.builder(
+          sliver: SliverList.separated(
             itemCount: resList.length,
-            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 200,
-              mainAxisExtent: 220,
-              mainAxisSpacing: 2,
-              crossAxisSpacing: 2,
-            ),
+            separatorBuilder: (context, index) => SizedBox(height: 10),
             itemBuilder: (context, index) => _listItem(resList[index]),
           ),
         ),
@@ -116,89 +109,61 @@ class _AndroidVideoChooserPageState extends State<AndroidVideoChooserPage> {
       onTap: () {
         context.pop<String>(file.path);
       },
-      child: Padding(
+      child: Container(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
+        decoration: BoxDecoration(
+          borderRadius: .circular(15),
+          color: col.surfaceContainer,
+        ),
+        child: Row(
+          mainAxisAlignment: .start,
+          crossAxisAlignment: .start,
+          spacing: 5,
           children: [
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: Icon(Icons.audio_file, size: 40),
+            ),
             Expanded(
-              child: Stack(
+              child: Column(
+                crossAxisAlignment: .start,
+                spacing: 5,
                 children: [
-                  Positioned.fill(
-                    child: VideoThumbnail(
-                      file: file,
-                      cachePath: widget.cachePath,
-                    ),
+                  Text(
+                    file.name.onlyName,
+                    maxLines: 2,
+                    overflow: .ellipsis,
+                    style: TextStyle(fontSize: 12),
                   ),
-                  Positioned(
-                    top: 3,
-                    right: 3,
-                    child: Container(
-                      padding: .symmetric(vertical: 2, horizontal: 4),
-                      decoration: BoxDecoration(
-                        color: col.surfaceContainer.withValues(alpha: .75),
-                        borderRadius: .circular(5),
-                      ),
-                      child: Text(
-                        file.duration.formatTimeLable(),
-                        style: TextStyle(color: col.onSurface),
-                      ),
-                    ),
+                  Wrap(
+                    spacing: 4,
+                    children: [
+                      _wrapItem(file.name.extName.upper),
+                      _wrapItem(file.duration.formatTimeLable()),
+                      _wrapItem(file.dateModified.formatTimeAgo()),
+                    ],
                   ),
                 ],
               ),
-            ),
-            Text(
-              file.name,
-              maxLines: 2,
-              overflow: .ellipsis,
-              textAlign: .center,
-              style: TextStyle(fontSize: 12),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class VideoThumbnail extends StatelessWidget {
-  new({super.key, required this.file, required this.cachePath});
-
-  final MediaFile file;
-  final String cachePath;
-
-  final videoPkg = ThanPkgAndroid.getInstance.videoHandler;
-
-  late final cacheFile = File(cachePath.join(file.name));
-
-  // @override
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(borderRadius: .circular(10), child: body);
-  }
-
-  Widget get body {
-    if (cacheFile.existsSync()) {
-      return Image.file(
-        cacheFile,
-        fit: .cover,
-        gaplessPlayback: true,
-        errorBuilder: (context, error, stackTrace) => Text('Err'),
-      );
+  Widget _wrapItem(String text) {
+    if (text.isEmpty) {
+      return SizedBox.shrink();
     }
-    return FutureBuilder(
-      future: videoPkg.saveThumbnail(file.path, cacheFile.path),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == .waiting) {
-          return Center(child: CircularProgressIndicator.adaptive());
-        }
-        return Image.file(
-          cacheFile,
-          fit: .cover,
-          gaplessPlayback: true,
-          errorBuilder: (context, error, stackTrace) => Text('Err'),
-        );
-      },
+    return Container(
+      padding: .symmetric(vertical: 2, horizontal: 6),
+      decoration: BoxDecoration(
+        color: col.primary,
+        borderRadius: .circular(15),
+      ),
+      child: Text(text, style: TextStyle(color: col.onPrimary)),
     );
   }
 }

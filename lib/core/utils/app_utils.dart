@@ -37,20 +37,17 @@ class AppUtils {
       _downloadDir = Directory(
         ThanPkgAndroid.getInstance.pathHandler.getDownloadPath().join(appName),
       );
+      final pkg = ThanPkgAndroid.getInstance.pathHandler;
+      _androidEmulatedStorageConfigDir = Directory(
+        pkg.getDeviceStoragePath().join('.${info.packageName}'),
+      );
     } else {
       final downloadDir = await getDownloadsDirectory();
       if (downloadDir != null) {
         _downloadDir = Directory(downloadDir.join(appName));
       }
     }
-
-    // android
-    if (Platform.isAndroid) {
-      final pkg = ThanPkgAndroid.getInstance.pathHandler;
-      _androidEmulatedStorageConfigDir = Directory(
-        pkg.getDeviceStoragePath().join('.${info.packageName}'),
-      );
-    }
+    await config.open(getConfigPath('app.config.cfb'));
     await savedCommandStore.open(
       getPlatfromExternalConfigPath('saved.command.store.cfb'),
     );

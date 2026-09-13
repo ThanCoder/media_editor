@@ -14,6 +14,7 @@ import 'package:media_editor/core/types/audio_output_format.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
 import 'package:media_editor/platforms/chooser/video_chooser.dart';
 import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart';
+import 'package:media_editor/platforms/components/dialog/success_alert_dialog.dart';
 import 'package:media_editor/platforms/components/forms/input_text.dart';
 import 'package:media_editor/platforms/pages/ffmpeg_process_page.dart';
 import 'package:t_widgets/t_widgets.dart';
@@ -128,7 +129,7 @@ class _VideoToAudioPageState extends State<VideoToAudioPage> {
   double rangeStart = 0;
   double rangeEnd = 0;
 
-  Future<void> process() async {
+  String get commandResult {
     final inputPath = choosedPath!;
 
     final outputPath = AppUtils.instance.getPlatfromDownloadPath(
@@ -164,9 +165,13 @@ class _VideoToAudioPageState extends State<VideoToAudioPage> {
         ],
       ],
     );
+    return builder.command;
+  }
+
+  Future<void> process() async {
     // print('command: ${builder.command}');
     context.pushMaterialPageRoute(
-      builder: (mainCtx) => FfmpegProcessPage(command: builder.command),
+      builder: (mainCtx) => FfmpegProcessPage(command: commandResult),
     );
   }
 
@@ -175,20 +180,7 @@ class _VideoToAudioPageState extends State<VideoToAudioPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Video To Audio'),
-        actions: [
-          if (choosedPath != null)
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  choosedPath = null;
-                });
-              },
-              icon: Icon(Icons.clear_all_outlined),
-            ),
-        ],
-      ),
+      appBar: _appbar(),
       body: choosedPath == null
           ? _chooseVideoWidget
           : CustomScrollView(
@@ -206,6 +198,42 @@ class _VideoToAudioPageState extends State<VideoToAudioPage> {
               icon: const Icon(Icons.play_arrow_rounded),
               label: const Text('Convert'),
             ),
+    );
+  }
+
+  AppBar _appbar() {
+    return AppBar(
+      title: Text('Video To Audio'),
+      actions: [
+        if (choosedPath != null)
+          IconButton(
+            style: IconButton.styleFrom(
+              backgroundColor: col.tertiary,
+              foregroundColor: col.onTertiary,
+            ),
+            onPressed: () {
+              showSuccessDialog(context, commandResult, title: 'Command');
+            },
+            icon: Icon(Icons.info_outline_rounded),
+          ),
+        SizedBox(width: 10),
+
+        if (choosedPath != null)
+          IconButton(
+            style: IconButton.styleFrom(
+              backgroundColor: col.tertiary,
+              foregroundColor: col.onTertiary,
+            ),
+            onPressed: () {
+              setState(() {
+                choosedPath = null;
+              });
+            },
+            icon: Icon(Icons.clear_all_outlined),
+          ),
+
+        SizedBox(width: 10),
+      ],
     );
   }
 

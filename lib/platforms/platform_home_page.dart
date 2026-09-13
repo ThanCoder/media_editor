@@ -30,11 +30,10 @@ class _PlatformHomePageState extends State<PlatformHomePage> {
 
   Widget _buttons() {
     return Center(
-      child: Wrap(
+      child: Column(
         spacing: 8,
-        runSpacing: 8,
-        alignment: .center,
         crossAxisAlignment: .center,
+        mainAxisAlignment: .center,
         children: [
           FilledButton.icon(
             onPressed: () {

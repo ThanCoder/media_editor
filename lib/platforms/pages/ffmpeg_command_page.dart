@@ -8,6 +8,7 @@ import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
 import 'package:media_editor/platforms/components/forms/input_text.dart';
 import 'package:media_editor/platforms/components/info_widget.dart';
+import 'package:media_editor/platforms/pages/command_editor_page.dart';
 import 'package:media_editor/platforms/pages/custom_command_page.dart';
 import 'package:media_editor/platforms/pages/ffmpeg_process_page.dart';
 import 'package:media_editor/platforms/pages/saved_command_page.dart';
@@ -26,20 +27,54 @@ class _FfmpegCommandPageState extends State<FfmpegCommandPage> {
 
   final nameCon = TextEditingController();
   final commandCon = TextEditingController();
+  final commandResultCon = TextEditingController();
   final commandResultNoti = ValueNotifier('');
+  final commandFocus = FocusNode();
+  final nameFocus = FocusNode();
 
   @override
   dispose() {
-    super.dispose();
     nameCon.dispose();
     commandCon.dispose();
+    commandResultCon.dispose();
+    commandFocus.dispose();
+    nameFocus.dispose();
+    super.dispose();
   }
 
-  void chooseMediaFile() async {
+  void clearFocus() {
+    nameFocus.unfocus();
+    commandFocus.unfocus();
+  }
+
+  void chooseVideoFile() async {
     try {
-      inputPath = await chooseMediaFileFromPlatform(context);
+      inputPath = await chooseMediaFileFromPlatform(
+        context,
+        dialogTitle: 'Choose Video File',
+        type: .video,
+      );
       if (inputPath == null) return;
-      nameCon.text = inputPath!.getName();
+      nameCon.text = inputPath!.getName(withExt: false);
+      commandChanged('');
+      if (!mounted) return;
+      setState(() {});
+    } catch (e) {
+      if (!mounted) return;
+      showErrorDialog(context, e.toString());
+    }
+  }
+
+  void chooseAudioFile() async {
+    try {
+      inputPath = await chooseMediaFileFromPlatform(
+        context,
+        dialogTitle: 'Choose Audio File',
+        type: .audio,
+      );
+      if (inputPath == null) return;
+      nameCon.text = inputPath!.getName(withExt: false);
+      commandChanged('');
       if (!mounted) return;
       setState(() {});
     } catch (e) {
@@ -49,16 +84,10 @@ class _FfmpegCommandPageState extends State<FfmpegCommandPage> {
   }
 
   Future<void> process() async {
-    final outputPath = AppUtils.instance.getPlatfromDownloadPath(nameCon.text);
-
-    final builder = FfmpegCommandBuilder(
-      input: inputPath!,
-      output: outputPath,
-      commands: [CustomCommand(commandCon.text)],
-    );
-    // print('command: ${builder.command}');
+    final command = commandResultCon.text;
+    if (command.isEmpty) return;
     context.pushMaterialPageRoute(
-      builder: (mainCtx) => FfmpegProcessPage(command: builder.command),
+      builder: (mainCtx) => FfmpegProcessPage(command: command),
     );
   }
 
@@ -68,6 +97,22 @@ class _FfmpegCommandPageState extends State<FfmpegCommandPage> {
     );
     if (res == null) return;
     commandCon.text = '${commandCon.text} $res';
+    commandChanged(res);
+    setState(() {});
+  }
+
+  void commandChanged(String val) {
+    commandResultCon.text = commandResult;
+    commandResultNoti.value = val;
+  }
+
+  void editCommandWithEditor() async {
+    final res = await context.pushMaterialPageRoute<String>(
+      builder: (mainCtx) => CommandEditorPage(text: commandResultCon.text),
+    );
+    if (res == null) return;
+    commandResultCon.text = res;
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -90,6 +135,10 @@ class _FfmpegCommandPageState extends State<FfmpegCommandPage> {
         actions: [
           if (inputPath != null)
             IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: col.errorContainer,
+                foregroundColor: col.onErrorContainer,
+              ),
               onPressed: () {
                 setState(() {
                   inputPath = null;
@@ -97,17 +146,19 @@ class _FfmpegCommandPageState extends State<FfmpegCommandPage> {
               },
               icon: Icon(Icons.clear_all_outlined),
             ),
+          SizedBox(width: 10),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            InfoWidget(path: inputPath),
-            if (inputPath == null) chooseMediaFileWidget,
-            if (inputPath != null) _commandWidgets,
-          ],
-        ),
-      ),
+      body: inputPath == null
+          ? chooseMediaFileWidget
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  InfoWidget(path: inputPath),
+                  if (inputPath != null) _commandWidgets,
+                ],
+              ),
+            ),
       floatingActionButton: inputPath == null
           ? null
           : FloatingActionButton(
@@ -125,10 +176,12 @@ class _FfmpegCommandPageState extends State<FfmpegCommandPage> {
         children: [
           InputText(
             controller: nameCon,
+            focusNode: nameFocus,
             label: Text('Output Name'),
             maxLines: 1,
-            onChanged: (val) {
-              commandResultNoti.value = val;
+            onChanged: commandChanged,
+            onTapOutside: (event) {
+              clearFocus();
             },
           ),
           SizedBox(height: 10),
@@ -147,17 +200,20 @@ class _FfmpegCommandPageState extends State<FfmpegCommandPage> {
       children: [
         InputText(
           controller: commandCon,
+          focusNode: commandFocus,
           label: Text('FFMpeg Command'),
           maxLines: null,
-          onChanged: (val) {
-            commandResultNoti.value = val;
-          },
+          onChanged: commandChanged,
           suffixIcon: IconButton(
             icon: const Icon(Icons.clear_all_outlined),
             onPressed: () {
               commandCon.clear();
+              commandChanged('');
             },
           ),
+          onTapOutside: (event) {
+            clearFocus();
+          },
         ),
         ValueListenableBuilder(
           valueListenable: commandResultNoti,
@@ -219,19 +275,32 @@ class _FfmpegCommandPageState extends State<FfmpegCommandPage> {
         spacing: 10,
         crossAxisAlignment: .start,
         children: [
-          Text(
-            'FFMpeg Result',
-            style: TextStyle(
-              fontWeight: .w600,
-              fontSize: 18,
-              color: col.onSurface,
-            ),
+          Row(
+            children: [
+              Text(
+                'FFMpeg Result',
+                style: TextStyle(
+                  fontWeight: .w600,
+                  fontSize: 18,
+                  color: col.onSurface,
+                ),
+              ),
+              Spacer(),
+              IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: col.primary,
+                  foregroundColor: col.onPrimary,
+                ),
+                onPressed: editCommandWithEditor,
+                icon: Icon(Icons.edit_document),
+              ),
+            ],
           ),
           ValueListenableBuilder(
             valueListenable: commandResultNoti,
             builder: (context, value, child) {
-              return SelectableText(
-                commandResult,
+              return Text(
+                commandResultCon.text,
                 style: TextStyle(
                   color: col.onSurfaceVariant,
                   fontWeight: .w400,
@@ -286,9 +355,15 @@ class _FfmpegCommandPageState extends State<FfmpegCommandPage> {
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(
-                  onPressed: chooseMediaFile,
-                  icon: const Icon(Icons.folder_open_outlined),
-                  label: const Text('Choose Media File'),
+                  onPressed: chooseVideoFile,
+                  icon: const Icon(Icons.video_file_outlined),
+                  label: const Text('Choose Video File'),
+                ),
+                const SizedBox(height: 14),
+                FilledButton.icon(
+                  onPressed: chooseAudioFile,
+                  icon: const Icon(Icons.audio_file_outlined),
+                  label: const Text('Choose Audio File'),
                 ),
               ],
             ),
