@@ -1,7 +1,8 @@
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
-import 'package:media_editor/platforms/pages/ffmpeg_command_page.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/command_list_editor_page.dart';
+import 'package:media_editor/platforms/pages/command_pages/ffmpeg_command_page.dart';
 import 'package:media_editor/platforms/pages/video_to_audio_page.dart';
 import 'package:t_widgets/t_widgets.dart';
 
@@ -52,6 +53,15 @@ class _PlatformHomePageState extends State<PlatformHomePage> {
             },
             icon: Icon(Icons.video_file_outlined),
             label: Text('Custom Command'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              context.pushMaterialPageRoute(
+                builder: (mainCtx) => CommandListEditorPage(),
+              );
+            },
+            icon: Icon(Icons.video_file_outlined),
+            label: Text('Block Editor Command'),
           ),
         ],
       ),

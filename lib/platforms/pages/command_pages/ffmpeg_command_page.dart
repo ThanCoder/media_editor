@@ -8,10 +8,10 @@ import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
 import 'package:media_editor/platforms/components/forms/input_text.dart';
 import 'package:media_editor/platforms/components/info_widget.dart';
-import 'package:media_editor/platforms/pages/command_editor_page.dart';
-import 'package:media_editor/platforms/pages/custom_command_page.dart';
+import 'package:media_editor/platforms/pages/command_pages/command_editor_page.dart';
+import 'package:media_editor/platforms/pages/command_pages/custom_command_page.dart';
 import 'package:media_editor/platforms/pages/ffmpeg_process_page.dart';
-import 'package:media_editor/platforms/pages/saved_command_page.dart';
+import 'package:media_editor/platforms/pages/command_pages/saved_command_page.dart';
 import 'package:t_widgets/t_widgets.dart';
 
 class FfmpegCommandPage extends StatefulWidget {

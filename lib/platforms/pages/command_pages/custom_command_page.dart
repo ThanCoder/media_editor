@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:media_editor/platforms/pages/buildin_command_page.dart';
-import 'package:media_editor/platforms/pages/saved_command_page.dart';
+import 'package:media_editor/platforms/pages/command_pages/buildin_command_page.dart';
+import 'package:media_editor/platforms/pages/command_pages/saved_command_page.dart';
 
 class CustomCommandPage extends StatefulWidget {
   const new({super.key});

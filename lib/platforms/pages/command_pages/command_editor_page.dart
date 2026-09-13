@@ -3,7 +3,7 @@ import 'package:media_editor/platforms/chooser/video_chooser.dart';
 import 'package:media_editor/platforms/components/dialog/confirm_alert_dialog.dart';
 import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart';
 import 'package:media_editor/platforms/components/forms/input_text.dart';
-import 'package:media_editor/platforms/pages/custom_command_page.dart';
+import 'package:media_editor/platforms/pages/command_pages/custom_command_page.dart';
 import 'package:t_widgets/t_widgets.dart';
 
 class CommandEditorPage extends StatefulWidget {

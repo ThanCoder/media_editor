@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:media_editor/platforms/pages/command_editor_page.dart';
+import 'package:media_editor/platforms/pages/command_pages/command_editor_page.dart';
 import 'package:t_widgets/t_widgets.dart';
 
 import 'package:media_editor/platforms/components/dialog/confirm_alert_dialog.dart';

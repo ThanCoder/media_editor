@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
-import 'package:media_editor/platforms/pages/buildin_command.dart';
+import 'package:media_editor/platforms/pages/command_pages/buildin_command.dart';
 import 'package:t_widgets/t_widgets.dart';
 
 class SavedCommandPage extends StatefulWidget {
