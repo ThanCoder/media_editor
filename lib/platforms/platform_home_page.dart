@@ -30,40 +30,103 @@ class _PlatformHomePageState extends State<PlatformHomePage> {
   }
 
   Widget _buttons() {
+    // final col = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         spacing: 8,
-        crossAxisAlignment: .center,
         mainAxisAlignment: .center,
         children: [
-          FilledButton.icon(
-            onPressed: () {
+          _actionCard(
+            icon: Icons.video_file_outlined,
+            title: 'Video To Audio',
+            subtitle: 'Convert video files to audio',
+            onTap: () {
               context.pushMaterialPageRoute(
                 builder: (mainCtx) => VideoToAudioPage(),
               );
             },
-            icon: Icon(Icons.video_file_outlined),
-            label: Text('Video To Audio'),
           ),
-          FilledButton.icon(
-            onPressed: () {
+
+          _actionCard(
+            icon: Icons.terminal_outlined,
+            title: 'Custom Command',
+            subtitle: 'Build your own FFmpeg command',
+            onTap: () {
               context.pushMaterialPageRoute(
                 builder: (mainCtx) => FfmpegCommandPage(),
               );
             },
-            icon: Icon(Icons.video_file_outlined),
-            label: Text('Custom Command'),
           ),
-          FilledButton.icon(
-            onPressed: () {
+
+          _actionCard(
+            icon: Icons.account_tree_outlined,
+            title: 'Block List Editor',
+            subtitle: 'Create and manage command blocks',
+            onTap: () {
               context.pushMaterialPageRoute(
                 builder: (mainCtx) => CommandListEditorPage(),
               );
             },
-            icon: Icon(Icons.video_file_outlined),
-            label: Text('Block Editor Command'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _actionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    final col = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      width: 420,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: col.primaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, color: col.onPrimaryContainer),
+                ),
+
+                const SizedBox(width: 16),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodySmall
+                            ?.copyWith(color: col.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Icon(Icons.chevron_right, color: col.onSurfaceVariant),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

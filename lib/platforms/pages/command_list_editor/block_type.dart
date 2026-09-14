@@ -7,7 +7,8 @@ enum BlockType {
   metadata,
   cover,
   encode,
-  output;
+  output,
+  other;
 
   IconData get iconData {
     return switch (this) {
@@ -18,6 +19,11 @@ enum BlockType {
       cover => Icons.image_outlined,
       encode => Icons.settings,
       output => Icons.output,
+      other => Icons.devices_other,
     };
+  }
+
+  static BlockType fromVal(String val) {
+    return values.firstWhere((e) => e.name == val, orElse: () => .other);
   }
 }

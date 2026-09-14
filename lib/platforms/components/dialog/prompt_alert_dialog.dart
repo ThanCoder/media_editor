@@ -13,6 +13,7 @@ Future<String?> showPromptAlertDialog(
   Color? closeColor,
   Color? closeForegroundColor,
   String? Function(String text)? onErrorCheck,
+  int? maxLines,
 }) async {
   return await showDialog<String>(
     context: context,
@@ -27,6 +28,7 @@ Future<String?> showPromptAlertDialog(
       closeColor: closeColor,
       closeForegroundColor: closeForegroundColor,
       onErrorCheck: onErrorCheck,
+      maxLines: maxLines,
     ),
   );
 }
@@ -43,6 +45,7 @@ class PromptAlertDialog extends StatefulWidget {
     this.closeColor,
     this.closeForegroundColor,
     this.onErrorCheck,
+    this.maxLines,
   });
 
   final String promptText;
@@ -55,6 +58,7 @@ class PromptAlertDialog extends StatefulWidget {
   final Color? closeColor;
   final Color? closeForegroundColor;
   final String? Function(String text)? onErrorCheck;
+  final int? maxLines;
 
   @override
   State<PromptAlertDialog> createState() => _PromptAlertDialogState();
@@ -122,6 +126,7 @@ class _PromptAlertDialogState extends State<PromptAlertDialog> {
     return TextField(
       controller: con,
       focusNode: focusNode,
+      maxLines: widget.maxLines,
       decoration: InputDecoration(
         border: OutlineInputBorder(),
         errorText: errorText,

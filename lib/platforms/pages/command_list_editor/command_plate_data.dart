@@ -45,6 +45,13 @@ const commandPlateData = [
     type: .trim,
     children: [
       CommandPlateItem(
+        id: 'start-end-time',
+        title: 'Start-End Time',
+        desc: 'Start-End converting from the specified time.',
+        command: '-ss {start} -to {end}',
+      ),
+
+      CommandPlateItem(
         id: 'start-time',
         title: 'Start Time',
         desc: 'Start converting from the specified time.',
@@ -213,6 +220,18 @@ const commandPlateData = [
         title: 'Audio Bitrate',
         desc: 'Set the audio bitrate.',
         command: '-b:a {bitrate}',
+      ),
+    ],
+  ),
+  CommandPlate(
+    title: 'Other',
+    type: .other,
+    children: [
+      .new(
+        id: 'other-id-1',
+        title: 'Other Command',
+        desc: '',
+        command: '{Custom Command}',
       ),
     ],
   ),

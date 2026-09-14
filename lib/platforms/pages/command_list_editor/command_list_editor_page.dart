@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
 import 'package:media_editor/core/utils/ffmpeg_utils.dart';
-import 'package:media_editor/platforms/chooser/video_chooser.dart';
+import 'package:media_editor/keys.dart';
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
 import 'package:media_editor/platforms/components/dialog/snack_alert.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/block_type.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate_view.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/command_plate_workspace_manager.dart';
 import 'package:media_editor/platforms/pages/ffmpeg_process_page.dart';
 import 'package:t_widgets/t_widgets.dart';
 
@@ -23,8 +24,29 @@ class CommandListEditorPage extends StatefulWidget {
 }
 
 class _CommandListEditorPageState extends State<CommandListEditorPage> {
-  final List<CommandBlock> blocks = [];
+  List<CommandBlock> blocks = [];
   ColorScheme get col => Theme.of(context).colorScheme;
+  final config = AppUtils.instance.config;
+
+  @override
+  void initState() {
+    blocks = config
+        .getMapList(commandListEditorPageBlockListKey)
+        .map((e) => CommandBlock.fromMap(e))
+        .toList();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    saveRecentBlock();
+    super.dispose();
+  }
+
+  void saveRecentBlock() {
+    final mapList = blocks.map((e) => e.toMap()).toList();
+    config.putAndWriteAll(commandListEditorPageBlockListKey, mapList);
+  }
 
   bool get isCanRun {
     if (blocks.isEmpty) return false;
@@ -75,90 +97,13 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
   }
 
   void onPlateClicked(CommandPlate plate, CommandPlateItem item) async {
-    // input
-    if (plate.type == .input) {
-      if (item.id == 'Input-Video-File') {
-        final path = await chooseVideoFromPlatform(context);
-        if (path == null) return;
-        blocks.add(
-          .new(
-            id: 'Input-Video-File',
-            type: plate.type,
-            title: item.title,
-            command: '-i "$path"',
-            source: path,
-            desc: item.desc,
-          ),
-        );
-        setState(() {});
-        return;
-      }
-      if (item.id == 'Input-Audio-File') {
-        final path = await chooseMediaFileFromPlatform(context, type: .audio);
-        if (path == null) return;
-        blocks.add(
-          .new(
-            id: 'Input-Video-File',
-            type: plate.type,
-            title: item.title,
-            command: '-i "$path"',
-            desc: item.desc,
-          ),
-        );
-        setState(() {});
-        return;
-      }
-    }
-    // output
-    if (plate.type == .output) {
-      if (item.id == 'Output-File') {
-        final outpath = AppUtils.instance.getPlatfromDownloadPath();
-        final name = await showPromptAlertDialog(context, 'filename');
-        if (name == null) return;
-        blocks.add(
-          .new(
-            id: item.id,
-            type: plate.type,
-            title: item.title,
-            command: '"${outpath.join(name)}"',
-            source: outpath.join(name),
-            desc: item.desc,
-          ),
-        );
-        setState(() {});
-        return;
-      }
-    }
+    await CommandPlateWorkspaceManager(
+      context: context,
+      plate: plate,
+      item: item,
+      blocks: blocks,
+    ).run();
 
-    // check ouptu block
-    if (blocks.isNotEmpty) {
-      final outputIndex = blocks.indexWhere((e) => e.type == .output);
-      if (outputIndex != -1) {
-        // final outputBlock = blocks[outputIndex];
-        blocks.insert(
-          outputIndex,
-          .new(
-            id: item.id,
-            type: plate.type,
-            title: item.title,
-            command: item.command,
-            desc: item.desc,
-          ),
-        );
-        setState(() {});
-        return;
-      }
-    }
-
-    blocks.add(
-      .new(
-        id: item.id,
-        type: plate.type,
-        title: item.title,
-        command: item.command,
-        desc: item.desc,
-      ),
-    );
     setState(() {});
   }
 
@@ -182,6 +127,8 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
     );
   }
 
+  double _panelWidth = 230;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -195,8 +142,26 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
               ? listWidget
               : Row(
                   children: [
-                    SizedBox(width: 230, child: blockPlate()),
-                    VerticalDivider(width: 1, color: col.outlineVariant),
+                    SizedBox(width: _panelWidth, child: blockPlate()),
+                    MouseRegion(
+                      cursor: SystemMouseCursors.resizeColumn,
+                      child: GestureDetector(
+                        behavior: .translucent,
+                        onHorizontalDragUpdate: (details) {
+                          setState(() {
+                            _panelWidth = (_panelWidth + details.delta.dx)
+                                .clamp(180, 400);
+                          });
+                        },
+                        child: SizedBox(
+                          width: 10,
+                          child: VerticalDivider(
+                            width: 1,
+                            color: col.outlineVariant,
+                          ),
+                        ),
+                      ),
+                    ),
                     Expanded(child: listWidget),
                   ],
                 ),
@@ -247,27 +212,26 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
     );
   }
 
-  Column _item(CommandBlock block, int index) {
-    return Column(
+  Widget _item(CommandBlock block, int index) {
+    return CommandBlockWidget(
       key: ValueKey(block),
-      children: [
-        CommandBlockWidget(
-          block: block,
-          onRemove: () {
-            blocks.removeAt(index);
-            setState(() {});
-          },
-          onEdit: () async {
-            final res = await showPromptAlertDialog(context, block.command);
-            if (res == null) return;
-            blocks[index] = block.copyWith(command: res);
-            setState(() {});
-          },
-          showInfoBtn: block.type == .input,
-          onInfoClicked: () => showBlockInfo(block),
-        ),
-        SizedBox(height: 1),
-      ],
+      block: block,
+      onRemove: () {
+        blocks.removeAt(index);
+        setState(() {});
+      },
+      onEdit: () async {
+        final res = await showPromptAlertDialog(
+          context,
+          block.command,
+          maxLines: null,
+        );
+        if (res == null) return;
+        blocks[index] = block.copyWith(command: res);
+        setState(() {});
+      },
+      showInfoBtn: block.type == .input,
+      onInfoClicked: () => showBlockInfo(block),
     );
   }
 }

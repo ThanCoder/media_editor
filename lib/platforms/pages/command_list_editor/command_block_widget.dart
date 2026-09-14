@@ -72,7 +72,7 @@ class CommandBlockWidget extends StatelessWidget {
                 ),
 
                 // Drag handle
-                const Icon(Icons.drag_handle, size: 20),
+                // const Icon(Icons.drag_handle, size: 20),
               ],
             ),
 

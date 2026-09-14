@@ -1,4 +1,5 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:dart_core_extensions/dart_core_extensions.dart';
+
 import 'block_type.dart';
 
 class CommandBlock {
@@ -33,6 +34,28 @@ class CommandBlock {
       command: command ?? this.command,
       desc: desc ?? this.desc,
       source: source ?? this.source,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': id,
+      'type': type.name,
+      'title': title,
+      'command': command,
+      'desc': desc,
+      'source': source,
+    };
+  }
+
+  factory CommandBlock.fromMap(Map<String, dynamic> map) {
+    return CommandBlock(
+      id: map['id'] as String,
+      type: .fromVal(map.getString(['type'])),
+      title: map['title'] as String,
+      command: map['command'] as String,
+      desc: map['desc'] as String,
+      source: map['source'] as String,
     );
   }
 }
