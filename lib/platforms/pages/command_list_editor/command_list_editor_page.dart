@@ -1,9 +1,11 @@
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
 import 'package:media_editor/core/utils/ffmpeg_utils.dart';
 import 'package:media_editor/platforms/chooser/video_chooser.dart';
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
+import 'package:media_editor/platforms/components/dialog/snack_alert.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/block_type.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate_view.dart';
@@ -39,6 +41,8 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
     if (info == null) return;
     if (!mounted) return;
     final strBuff = StringBuffer();
+    strBuff.writeln('Name: ${info.name}');
+    strBuff.writeln('size: ${info.sizeLabel}');
     strBuff.writeln('bitrate: ${info.bitrate}');
     strBuff.writeln('format: ${info.format}');
     strBuff.writeln('duration: ${info.duration?.formatTimeLable()}');
@@ -46,7 +50,7 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
       strBuff.writeln('type: ${st.type}');
       strBuff.writeln('codec: ${st.codec}');
     }
-    strBuff.writeln(info.info.toString());
+    // strBuff.writeln(info.info.toString());
     showDialog(
       context: context,
       builder: (context) => AlertDialog.adaptive(
@@ -275,7 +279,19 @@ class _CommandViewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Command View')),
+      appBar: AppBar(
+        title: Text('Command View'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: command));
+              if (!context.mounted) return;
+              showSnackbar(context, 'Copid');
+            },
+            icon: Icon(Icons.copy_all_outlined),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
