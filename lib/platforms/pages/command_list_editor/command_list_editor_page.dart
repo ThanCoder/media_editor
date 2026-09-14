@@ -1,8 +1,17 @@
+import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:media_editor/core/utils/app_utils.dart';
+import 'package:media_editor/core/utils/ffmpeg_utils.dart';
+import 'package:media_editor/platforms/chooser/video_chooser.dart';
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/block_type.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/command_plate.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/command_plate_view.dart';
+import 'package:media_editor/platforms/pages/ffmpeg_process_page.dart';
+import 'package:t_widgets/t_widgets.dart';
 
-import 'block_type.dart';
 import 'command_block.dart';
+import 'command_block_widget.dart';
 
 class CommandListEditorPage extends StatefulWidget {
   const CommandListEditorPage({super.key});
@@ -12,72 +21,183 @@ class CommandListEditorPage extends StatefulWidget {
 }
 
 class _CommandListEditorPageState extends State<CommandListEditorPage> {
-  final List<CommandBlock> blocks = [
-    const CommandBlock(
-      id: '1',
-      type: BlockType.input,
-      title: 'Input',
-      command: '-i "input.mp4"',
-      desc: 'Input media file',
-    ),
-    const CommandBlock(
-      id: '2',
-      type: BlockType.volume,
-      title: 'Volume',
-      command: '-af volume=2',
-      desc: 'Change audio volume',
-    ),
-    const CommandBlock(
-      id: '3',
-      type: BlockType.encode,
-      title: 'Encode',
-      command: '-c:a aac',
-      desc: 'Encode audio',
-    ),
-  ];
+  final List<CommandBlock> blocks = [];
   ColorScheme get col => Theme.of(context).colorScheme;
 
-  void showCodeView() {
-    final data = blocks.fold(
-      "",
-      (previousValue, element) => '$previousValue \n\n${element.command}',
-    );
-    // showSuccessDialog(context, data);
+  bool get isCanRun {
+    if (blocks.isEmpty) return false;
+    final types = blocks.map((e) => e.type);
+
+    final hasInput = types.contains(BlockType.input);
+    final hasOutput = blocks.last.type == .output;
+
+    return hasInput && hasOutput;
+  }
+
+  void showBlockInfo(CommandBlock block) async {
+    final info = await FfmpegUtils.getInfo(block.source);
+    if (info == null) return;
+    if (!mounted) return;
+    final strBuff = StringBuffer();
+    strBuff.writeln('bitrate: ${info.bitrate}');
+    strBuff.writeln('format: ${info.format}');
+    strBuff.writeln('duration: ${info.duration?.formatTimeLable()}');
+    for (var st in info.info.streams) {
+      strBuff.writeln('type: ${st.type}');
+      strBuff.writeln('codec: ${st.codec}');
+    }
+    strBuff.writeln(info.info.toString());
     showDialog(
       context: context,
       builder: (context) => AlertDialog.adaptive(
         scrollable: true,
-        content: SingleChildScrollView(child: SelectableText(data)),
+        title: Text('Info'),
+        content: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SelectableText(strBuff.toString()),
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () {
+              context.pop();
+            },
+            child: Text('Close'),
+          ),
+        ],
       ),
+    );
+  }
+
+  void onPlateClicked(CommandPlate plate, CommandPlateItem item) async {
+    // input
+    if (plate.type == .input) {
+      if (item.id == 'Input-Video-File') {
+        final path = await chooseVideoFromPlatform(context);
+        if (path == null) return;
+        blocks.add(
+          .new(
+            id: 'Input-Video-File',
+            type: plate.type,
+            title: item.title,
+            command: '-i "$path"',
+            source: path,
+            desc: item.desc,
+          ),
+        );
+        setState(() {});
+        return;
+      }
+      if (item.id == 'Input-Audio-File') {
+        final path = await chooseMediaFileFromPlatform(context, type: .audio);
+        if (path == null) return;
+        blocks.add(
+          .new(
+            id: 'Input-Video-File',
+            type: plate.type,
+            title: item.title,
+            command: '-i "$path"',
+            desc: item.desc,
+          ),
+        );
+        setState(() {});
+        return;
+      }
+    }
+    // output
+    if (plate.type == .output) {
+      if (item.id == 'Output-File') {
+        final outpath = AppUtils.instance.getPlatfromDownloadPath();
+        final name = await showPromptAlertDialog(context, 'filename');
+        if (name == null) return;
+        blocks.add(
+          .new(
+            id: item.id,
+            type: plate.type,
+            title: item.title,
+            command: '"${outpath.join(name)}"',
+            source: outpath.join(name),
+            desc: item.desc,
+          ),
+        );
+        setState(() {});
+        return;
+      }
+    }
+
+    // check ouptu block
+    if (blocks.isNotEmpty) {
+      final outputIndex = blocks.indexWhere((e) => e.type == .output);
+      if (outputIndex != -1) {
+        // final outputBlock = blocks[outputIndex];
+        blocks.insert(
+          outputIndex,
+          .new(
+            id: item.id,
+            type: plate.type,
+            title: item.title,
+            command: item.command,
+            desc: item.desc,
+          ),
+        );
+        setState(() {});
+        return;
+      }
+    }
+
+    blocks.add(
+      .new(
+        id: item.id,
+        type: plate.type,
+        title: item.title,
+        command: item.command,
+        desc: item.desc,
+      ),
+    );
+    setState(() {});
+  }
+
+  void showCodeView() {
+    final command = blocks.fold(
+      "",
+      (previousValue, element) => '$previousValue \n${element.command}',
+    );
+    context.pushMaterialPageRoute(
+      builder: (mainCtx) => _CommandViewPage(command: command),
+    );
+  }
+
+  void runProcess() {
+    final command = blocks.fold(
+      "",
+      (previousValue, element) => '$previousValue ${element.command}',
+    );
+    context.pushMaterialPageRoute(
+      builder: (mainCtx) => FfmpegProcessPage(command: command),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _appbar(),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 700;
-          if (isWide) {
-            return Row(
-              children: [
-                SizedBox(width: 230, child: blockPlate()),
-                VerticalDivider(width: 1, color: col.outlineVariant),
-                Expanded(child: listWidget),
-              ],
-            );
-          }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 700;
+        return Scaffold(
+          appBar: _appbar(),
+          drawer: isWide ? null : Drawer(child: SafeArea(child: blockPlate())),
 
-          return Column(
-            children: [
-              SizedBox(height: 125, child: blockPlate(isWrap: true)),
-              Divider(height: 1, color: col.outlineVariant),
-              Expanded(child: listWidget),
-            ],
-          );
-        },
-      ),
+          body: !isWide
+              ? listWidget
+              : Row(
+                  children: [
+                    SizedBox(width: 230, child: blockPlate()),
+                    VerticalDivider(width: 1, color: col.outlineVariant),
+                    Expanded(child: listWidget),
+                  ],
+                ),
+        );
+      },
     );
   }
 
@@ -86,7 +206,7 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
       title: const Text('FFmpeg Blocks'),
       actions: [
         IconButton(
-          onPressed: () {},
+          onPressed: !isCanRun ? null : runProcess,
           icon: const Icon(Icons.play_arrow),
           tooltip: 'Run',
         ),
@@ -100,68 +220,7 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
   }
 
   Widget blockPlate({bool isWrap = false}) {
-    final items = [
-      (type: BlockType.input, title: 'Input', icon: Icons.input),
-      (type: BlockType.trim, title: 'Trim', icon: Icons.content_cut),
-      (type: BlockType.volume, title: 'Volume', icon: Icons.volume_up),
-      (type: BlockType.metadata, title: 'Metadata', icon: Icons.info_outline),
-      (type: BlockType.cover, title: 'Cover', icon: Icons.image_outlined),
-      (type: BlockType.encode, title: 'Encode', icon: Icons.settings),
-      (type: BlockType.output, title: 'Output', icon: Icons.output),
-    ];
-
-    if (isWrap) {
-      return ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.all(8),
-        itemCount: items.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 4),
-        itemBuilder: (context, index) {
-          return plateItem(items[index]);
-        },
-      );
-    }
-
-    return ListView.separated(
-      padding: const EdgeInsets.all(8),
-      itemCount: items.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 4),
-      itemBuilder: (context, index) {
-        return plateItem(items[index]);
-      },
-    );
-  }
-
-  Widget plateItem(({BlockType type, String title, IconData icon}) data) {
-    return Card(
-      child: InkWell(
-        onTap: () {
-          // debugPrint('Add: ${data.type}');
-          blocks.add(
-            .new(
-              id: 'uuid',
-              type: data.type,
-              title: data.title,
-              command: '',
-              desc: '',
-            ),
-          );
-          setState(() {});
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(data.icon, size: 20),
-              const SizedBox(width: 8),
-              Text(data.title),
-            ],
-          ),
-        ),
-      ),
-    );
+    return CommandPlateView(isWrap: isWrap, onTap: onPlateClicked);
   }
 
   Widget get listWidget {
@@ -200,6 +259,8 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
             blocks[index] = block.copyWith(command: res);
             setState(() {});
           },
+          showInfoBtn: block.type == .input,
+          onInfoClicked: () => showBlockInfo(block),
         ),
         SizedBox(height: 1),
       ],
@@ -207,103 +268,18 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
   }
 }
 
-class CommandBlockWidget extends StatelessWidget {
-  const CommandBlockWidget({
-    super.key,
-    required this.block,
-    this.onRemove,
-    this.onEdit,
-  });
-  final CommandBlock block;
-  final VoidCallback? onRemove;
-  final VoidCallback? onEdit;
+class _CommandViewPage extends StatelessWidget {
+  const new({required this.command});
+  final String command;
 
   @override
   Widget build(BuildContext context) {
-    final col = Theme.of(context).colorScheme;
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      elevation: 0,
-      color: col.primaryContainer.withValues(alpha: .45),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: col.outlineVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(block.type.iconData, size: 20, color: col.primary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    block.title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: col.onPrimaryContainer,
-                    ),
-                  ),
-                ),
-
-                // Remove
-                IconButton(
-                  onPressed: onRemove,
-                  tooltip: 'Remove',
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.close),
-                ),
-                // Remove
-                IconButton(
-                  onPressed: onEdit,
-                  tooltip: 'Edit',
-                  visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.edit_document),
-                ),
-
-                // Drag handle
-                const Icon(Icons.drag_handle, size: 20),
-              ],
-            ),
-
-            if (block.command.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: col.surface.withValues(alpha: .65),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  block.command,
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 13,
-                    color: col.onSurface,
-                  ),
-                ),
-              ),
-            ],
-
-            if (block.desc.isNotEmpty) ...[
-              const SizedBox(height: 7),
-              Text(
-                block.desc,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: col.onPrimaryContainer.withValues(alpha: .7),
-                ),
-              ),
-            ],
-          ],
+    return Scaffold(
+      appBar: AppBar(title: Text('Command View')),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SelectableText(command),
         ),
       ),
     );

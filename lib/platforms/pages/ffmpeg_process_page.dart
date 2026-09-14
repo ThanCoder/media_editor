@@ -180,24 +180,21 @@ class _FfmpegProcessPageState extends State<FfmpegProcessPage> {
         if (didPop) return;
         goBack();
       },
-      child: Theme(
-        data: .dark(),
-        child: Scaffold(
-          appBar: _appbar(context),
-          body: CustomScrollView(
-            controller: scrollCon,
-            slivers: [
-              // SliverPadding(
-              //   padding: .symmetric(vertical: 10, horizontal: 15),
-              //   sliver: SliverToBoxAdapter(child: _header),
-              // ),
-              SliverPadding(
-                padding: .symmetric(vertical: 10, horizontal: 15),
-                sliver: _result(),
-              ),
-              SliverToBoxAdapter(child: SizedBox(height: 80)),
-            ],
-          ),
+      child: Scaffold(
+        appBar: _appbar(context),
+        body: CustomScrollView(
+          controller: scrollCon,
+          slivers: [
+            // SliverPadding(
+            //   padding: .symmetric(vertical: 10, horizontal: 15),
+            //   sliver: SliverToBoxAdapter(child: _header),
+            // ),
+            SliverPadding(
+              padding: .symmetric(vertical: 10, horizontal: 15),
+              sliver: _result(),
+            ),
+            SliverToBoxAdapter(child: SizedBox(height: 80)),
+          ],
         ),
       ),
     );
@@ -260,7 +257,9 @@ class _FfmpegProcessPageState extends State<FfmpegProcessPage> {
               foregroundColor: col.onSurfaceVariant,
             ),
             onPressed: () {
-              Clipboard.setData(.new(text: logList.join('\n')));
+              Clipboard.setData(
+                .new(text: logList.map((e) => e.message).join('\n')),
+              );
             },
             icon: Icon(Icons.copy_all_rounded),
           ),

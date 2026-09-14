@@ -8,6 +8,7 @@ class CommandBlock {
     required this.title,
     required this.command,
     required this.desc,
+    this.source = '',
   });
 
   final String id;
@@ -15,6 +16,7 @@ class CommandBlock {
   final String title;
   final String command;
   final String desc;
+  final String source;
 
   CommandBlock copyWith({
     String? id,
@@ -22,6 +24,7 @@ class CommandBlock {
     String? title,
     String? command,
     String? desc,
+    String? source,
   }) {
     return CommandBlock(
       id: id ?? this.id,
@@ -29,6 +32,7 @@ class CommandBlock {
       title: title ?? this.title,
       command: command ?? this.command,
       desc: desc ?? this.desc,
+      source: source ?? this.source,
     );
   }
 }
