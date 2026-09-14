@@ -25,46 +25,49 @@ class FileInfo {
 
 class FfmpegUtils {
   static Future<FileInfo?> getInfo(String path) async {
-    final f = File(path);
-    if (!f.existsSync()) return null;
+    final file = File(path);
+    if (!file.existsSync()) return null;
 
     final completer = Completer<FileInfo?>();
+
     await FFprobeKit.getMediaInformationAsync(
       path,
       onComplete: (session) {
         final info = session.getMediaInformation();
+
         if (info == null) {
           completer.complete(null);
           return;
         }
-        final sizeLabel = f.fileSizeLabel();
-        final name = f.name;
-        final dur = info.duration;
-        if (dur != null) {
-          final duration = Duration(seconds: double.parse(dur).toInt());
-          completer.complete(
-            FileInfo(
-              info: info,
-              duration: duration,
-              sizeLabel: sizeLabel,
-              name: name,
-              bitrate: info.bitrate,
-              format: info.format,
-            ),
-          );
-          return;
+
+        final durationText = info.duration;
+
+        Duration? duration;
+
+        if (durationText != null) {
+          final seconds = double.tryParse(durationText);
+
+          if (seconds != null) {
+            duration = Duration(milliseconds: (seconds * 1000).round());
+          }
         }
+
+        final sizeLabel = file.fileSizeLabel();
+        final name = file.name;
+
         completer.complete(
           FileInfo(
-            name: name,
             info: info,
+            duration: duration,
             sizeLabel: sizeLabel,
+            name: name,
             bitrate: info.bitrate,
             format: info.format,
           ),
         );
       },
     );
+
     return completer.future;
   }
 }

@@ -102,6 +102,7 @@ class CommandPlateWorkspaceManager {
           title: item.title,
           command: '-i "$path"',
           desc: item.desc,
+          source: path,
         ),
       );
       return;
@@ -126,16 +127,20 @@ class CommandPlateWorkspaceManager {
 
       return;
     }
+    _addBlockItemAutoPosition(
+      .new(
+        id: item.id,
+        title: item.title,
+        desc: item.desc,
+        command: item.command,
+      ),
+    );
   }
 
   Future<void> _doTrim() async {
     if (item.id == 'start-end-time') {
       final dur = await _getDurationFromInput();
-      if (dur == null) {
-        if (!context.mounted) return;
-        showErrorDialog(context, 'Input File မှာ Duration မရှိပါ!');
-        return;
-      }
+      if (dur == null) return;
       final end = dur.inSeconds.toDouble();
       if (!context.mounted) return;
       final range = await showDialog<RangeValues>(
@@ -158,11 +163,7 @@ class CommandPlateWorkspaceManager {
 
     if (item.id == 'start-time') {
       final dur = await _getDurationFromInput();
-      if (dur == null) {
-        if (!context.mounted) return;
-        showErrorDialog(context, 'Input File မှာ Duration မရှိပါ!');
-        return;
-      }
+      if (dur == null) return;
       final end = dur.inSeconds.toDouble();
       if (!context.mounted) return;
       final value = await showDialog<double>(
@@ -184,11 +185,7 @@ class CommandPlateWorkspaceManager {
     }
     if (item.id == 'duration') {
       final dur = await _getDurationFromInput();
-      if (dur == null) {
-        if (!context.mounted) return;
-        showErrorDialog(context, 'Input File မှာ Duration မရှိပါ!');
-        return;
-      }
+      if (dur == null) return;
       final end = dur.inSeconds.toDouble();
       if (!context.mounted) return;
       final value = await showDialog<double>(
@@ -214,11 +211,7 @@ class CommandPlateWorkspaceManager {
 
     if (item.id == 'End-Time') {
       final dur = await _getDurationFromInput();
-      if (dur == null) {
-        if (!context.mounted) return;
-        showErrorDialog(context, 'Input File မှာ Duration မရှိပါ!');
-        return;
-      }
+      if (dur == null) return;
       final end = dur.inSeconds.toDouble();
       if (!context.mounted) return;
       final value = await showDialog<double>(
@@ -252,7 +245,7 @@ class CommandPlateWorkspaceManager {
   Future<Duration?> _getDurationFromInput() async {
     final inputIndex = blocks.indexWhere((e) => e.type == .input);
     if (inputIndex == -1) {
-      showErrorDialog(context, 'အနည်းဆုံး Input File တစ်ခုရှိရမယ်!');
+      showErrorDialog(context, 'At least one input file is required!');
       return null;
     }
     final info = await FfmpegUtils.getInfo(blocks[inputIndex].source);
@@ -260,7 +253,7 @@ class CommandPlateWorkspaceManager {
       if (!context.mounted) return null;
       showErrorDialog(
         context,
-        'Input File ကနေ Duration ထုတ်လို့မရဖြစ်နေပါတယ်!',
+        'Failed to get the duration from the input file.!',
       );
       return null;
     }

@@ -224,6 +224,53 @@ const commandPlateData = [
     ],
   ),
   CommandPlate(
+    title: 'Stream',
+    type: .stream,
+    children: [
+      CommandPlateItem(
+        id: 'Stream-Audio-Only',
+        title: 'Audio Only',
+        desc: 'Keep only the audio stream and remove video streams.',
+        command: '-map 0:a:0',
+      ),
+
+      CommandPlateItem(
+        id: 'Stream-Video-Only',
+        title: 'Video Only',
+        desc: 'Keep only the video stream and remove audio streams.',
+        command: '-map 0:v:0',
+      ),
+
+      CommandPlateItem(
+        id: 'Stream-Copy-Audio',
+        title: 'Copy Audio',
+        desc: 'Copy the audio stream without re-encoding.',
+        command: '-map 0:a:0 -c:a copy',
+      ),
+
+      CommandPlateItem(
+        id: 'Stream-Copy-Video',
+        title: 'Copy Video',
+        desc: 'Copy the video stream without re-encoding.',
+        command: '-map 0:v:0 -c:v copy',
+      ),
+
+      CommandPlateItem(
+        id: 'Stream-Audio-Video',
+        title: 'Audio + Video',
+        desc: 'Keep both audio and video streams.',
+        command: '-map 0:a:0 -map 0:v:0',
+      ),
+
+      CommandPlateItem(
+        id: 'Stream-Copy-All',
+        title: 'Copy All Streams',
+        desc: 'Copy all input streams without re-encoding.',
+        command: '-map 0 -c copy',
+      ),
+    ],
+  ),
+  CommandPlate(
     title: 'Other',
     type: .other,
     children: [

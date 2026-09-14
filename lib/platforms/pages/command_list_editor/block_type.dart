@@ -8,18 +8,20 @@ enum BlockType {
   cover,
   encode,
   output,
+  stream,
   other;
 
   IconData get iconData {
     return switch (this) {
-      input => Icons.input,
-      trim => Icons.content_cut,
-      volume => Icons.volume_up,
-      metadata => Icons.info_outline,
+      input => Icons.input_rounded,
+      trim => Icons.content_cut_rounded,
+      volume => Icons.volume_up_rounded,
+      metadata => Icons.info_outline_rounded,
       cover => Icons.image_outlined,
-      encode => Icons.settings,
-      output => Icons.output,
-      other => Icons.devices_other,
+      encode => Icons.transform_rounded,
+      stream => Icons.alt_route_rounded,
+      output => Icons.output_rounded,
+      other => Icons.more_horiz_rounded,
     };
   }
 

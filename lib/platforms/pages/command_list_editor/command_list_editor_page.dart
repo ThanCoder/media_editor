@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
 import 'package:media_editor/core/utils/ffmpeg_utils.dart';
 import 'package:media_editor/keys.dart';
+import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart';
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
 import 'package:media_editor/platforms/components/dialog/snack_alert.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/block_type.dart';
@@ -60,7 +61,14 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
 
   void showBlockInfo(CommandBlock block) async {
     final info = await FfmpegUtils.getInfo(block.source);
-    if (info == null) return;
+    if (info == null) {
+      if (!mounted) return;
+      showErrorDialog(
+        context,
+        'Failed to get the duration from the input file!.',
+      );
+      return;
+    }
     if (!mounted) return;
     final strBuff = StringBuffer();
     strBuff.writeln('Name: ${info.name}');
