@@ -9,6 +9,7 @@ class CommandBlockWidget extends StatelessWidget {
     this.onEdit,
     this.actions = const [],
   });
+
   final CommandBlock block;
   final VoidCallback? onRemove;
   final VoidCallback? onEdit;
@@ -17,14 +18,15 @@ class CommandBlockWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final col = Theme.of(context).colorScheme;
+    final typeColor = block.type.color;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       elevation: 0,
-      color: col.primaryContainer.withValues(alpha: .45),
+      color: typeColor.withValues(alpha: .12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: col.outlineVariant),
+        side: BorderSide(color: typeColor.withValues(alpha: .35)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -33,40 +35,35 @@ class CommandBlockWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(block.type.iconData, size: 20, color: col.primary),
+                Icon(block.type.iconData, size: 20, color: typeColor),
                 const SizedBox(width: 8),
+
                 Expanded(
                   child: Text(
                     block.title,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: col.onPrimaryContainer,
+                      color: typeColor,
                     ),
                   ),
                 ),
-                ...actions,
-                // if(actions.isEmpty)
-                // info
-                 
 
-                // Remove
+                ...actions,
+
                 IconButton(
                   onPressed: onRemove,
                   tooltip: 'Remove',
                   visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close, color: col.onSurfaceVariant),
                 ),
-                // Remove
+
                 IconButton(
                   onPressed: onEdit,
                   tooltip: 'Edit',
                   visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.edit_document),
+                  icon: Icon(Icons.edit_document, color: col.onSurfaceVariant),
                 ),
-
-                // Drag handle
-                // const Icon(Icons.drag_handle, size: 20),
               ],
             ),
 
@@ -81,6 +78,7 @@ class CommandBlockWidget extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: col.surface.withValues(alpha: .65),
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: typeColor.withValues(alpha: .15)),
                 ),
                 child: SelectableText(
                   block.command,
@@ -97,10 +95,7 @@ class CommandBlockWidget extends StatelessWidget {
               const SizedBox(height: 7),
               Text(
                 block.desc,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: col.onPrimaryContainer.withValues(alpha: .7),
-                ),
+                style: TextStyle(fontSize: 11, color: col.onSurfaceVariant),
               ),
             ],
           ],

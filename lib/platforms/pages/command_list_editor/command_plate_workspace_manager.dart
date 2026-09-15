@@ -46,9 +46,9 @@ class CommandPlateWorkspaceManager {
   void _addBlockItemAutoPosition(CommandPlateItem itm) {
     // check output block
     if (blocks.isNotEmpty) {
+      // output
       final outputIndex = blocks.indexWhere((e) => e.type == .output);
       if (outputIndex != -1) {
-        // final outputBlock = blocks[outputIndex];
         blocks.insert(
           outputIndex,
           .new(
@@ -57,6 +57,7 @@ class CommandPlateWorkspaceManager {
             title: itm.title,
             command: itm.command,
             desc: itm.desc,
+            source: item.source,
           ),
         );
 
@@ -71,46 +72,54 @@ class CommandPlateWorkspaceManager {
         title: itm.title,
         command: itm.command,
         desc: itm.desc,
+        source: item.source,
       ),
     );
   }
 
   Future<void> _doInput() async {
+    final inputIndex = blocks.indexWhere((e) => e.type == .input);
     if (item.id == 'Input-Video-File') {
       final path = await chooseVideoFromPlatform(context);
       if (path == null) return;
-      blocks.add(
-        .new(
-          id: 'Input-Video-File',
-          type: plate.type,
-          title: item.title,
-          command: '-i "$path"',
-          source: path,
-          desc: item.desc,
-        ),
+      final bl = CommandBlock(
+        id: 'Input-Video-File',
+        type: plate.type,
+        title: item.title,
+        command: '-i "$path"',
+        source: path,
+        desc: item.desc,
       );
+      if (inputIndex != -1) {
+        blocks.insert(inputIndex + 1, bl);
+      } else {
+        blocks.insert(0, bl);
+      }
 
       return;
     }
     if (item.id == 'Input-Audio-File') {
       final path = await chooseMediaFileFromPlatform(context, type: .audio);
       if (path == null) return;
-      blocks.add(
-        .new(
-          id: 'Input-Video-File',
-          type: plate.type,
-          title: item.title,
-          command: '-i "$path"',
-          desc: item.desc,
-          source: path,
-        ),
+      final bl = CommandBlock(
+        id: 'Input-Video-File',
+        type: plate.type,
+        title: item.title,
+        command: '-i "$path"',
+        desc: item.desc,
+        source: path,
       );
+      if (inputIndex != -1) {
+        blocks.insert(inputIndex + 1, bl);
+      } else {
+        blocks.insert(0, bl);
+      }
       return;
     }
   }
 
   Future<void> _doOutpt() async {
-    if (item.id == 'Output-File') {
+    if (item.id == 'output') {
       final outpath = AppUtils.instance.getPlatfromDownloadPath();
       final name = await showPromptAlertDialog(context, 'filename');
       if (name == null) return;
@@ -179,6 +188,7 @@ class CommandPlateWorkspaceManager {
           title: item.title,
           desc: item.desc,
           command: '-ss $value',
+          source: value.toString(),
         ),
       );
       return;
@@ -204,6 +214,7 @@ class CommandPlateWorkspaceManager {
           title: item.title,
           desc: item.desc,
           command: '-t $value',
+          source: value.toString(),
         ),
       );
       return;
@@ -227,6 +238,7 @@ class CommandPlateWorkspaceManager {
           title: item.title,
           desc: item.desc,
           command: '-to $value',
+          source: value.toString(),
         ),
       );
       return;

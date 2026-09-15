@@ -1,13 +1,13 @@
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
 import 'package:media_editor/core/utils/ffmpeg_utils.dart';
 import 'package:media_editor/platforms/chooser/video_chooser.dart';
 import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart';
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
-import 'package:media_editor/platforms/components/dialog/snack_alert.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/block_type.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/command_list_editor_code_view_page.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/dialog/slider_dialog.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/types/command_list_editor_template.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/types/command_plate.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate_view.dart';
@@ -109,12 +109,12 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
   }
 
   void showCodeView() {
-    final command = blocks.fold(
-      "",
-      (previousValue, element) => '$previousValue \n${element.command}',
-    );
+    // final command = blocks.fold(
+    //   "",
+    //   (previousValue, element) => '$previousValue \n${element.command}',
+    // );
     context.pushMaterialPageRoute(
-      builder: (mainCtx) => _CommandViewPage(command: command),
+      builder: (mainCtx) => CommandListEditorCodeViewPage(blocks: blocks),
     );
   }
 
@@ -146,7 +146,7 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
       type: .video,
     );
     if (path == null) return;
-    blocks[index] = block.copyWith(source: path, command: '-i $path');
+    blocks[index] = block.copyWith(source: path, command: '-i "$path"');
     if (!mounted) return;
     setState(() {});
   }
@@ -158,17 +158,166 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
       type: .audio,
     );
     if (path == null) return;
-    blocks[index] = block.copyWith(source: path, command: '-i $path');
+    blocks[index] = block.copyWith(source: path, command: '-i "$path"');
     if (!mounted) return;
     setState(() {});
   }
 
   void editOutputName(CommandBlock block, int index) async {
-    final name = await showPromptAlertDialog(context, 'filename');
+    final name = await showPromptAlertDialog(
+      context,
+      block.source.emptyOr('filename'),
+    );
     if (name == null) return;
     blocks[index] = block.copyWith(
-      command: '-i ${AppUtils.instance.getPlatfromDownloadPath(name)}',
+      command: '"${AppUtils.instance.getPlatfromDownloadPath(name)}"',
+      source: name,
     );
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  void editVolume(CommandBlock block, int index) async {
+    if (block.id == 'volume') {
+      final value = await showDialog<double>(
+        context: context,
+        builder: (context) => SliderDialog(
+          max: 3,
+          value: double.tryParse(block.source) ?? 1,
+          title: 'Volume',
+          valueWidget: (value) => Text('Value: ${value.toStringAsFixed(2)}'),
+        ),
+      );
+      if (value == null) return;
+      blocks[index] = block.copyWith(
+        command: '-af volume=$value',
+        source: value.toString(),
+      );
+    }
+
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  void editTrim(CommandBlock block, int index) async {
+    final inputIndex = blocks.indexWhere((e) => e.type == .input);
+    if (inputIndex == -1) {
+      showErrorDialog(context, 'At least one input file is required!');
+      return;
+    }
+    final info = await FfmpegUtils.getInfo(blocks[inputIndex].source);
+    if (!mounted) return;
+    if (info == null) {
+      showErrorDialog(
+        context,
+        'Failed to get the duration from the input file.!',
+      );
+      return;
+    }
+    if (block.id == 'duration') {
+      final value = await showDialog<double>(
+        context: context,
+        builder: (context) => SliderDialog(
+          max: info.duration!.inSeconds.toDouble(),
+          value: double.tryParse(block.source) ?? 0,
+          title: 'Duration',
+          headerWiget: Text('Duration: ${info.duration!.formatClockLabel()}'),
+          valueWidget: (value) => Text(
+            'Seconds: ${Duration(seconds: value.toInt()).formatClockLabel()}',
+          ),
+        ),
+      );
+      if (value == null) return;
+      blocks[index] = block.copyWith(
+        command: '-t $value',
+        source: value.toString(),
+      );
+      if (!mounted) return;
+      setState(() {});
+      return;
+    }
+    if (block.id == 'start-time') {
+      final value = await showDialog<double>(
+        context: context,
+        builder: (context) => SliderDialog(
+          max: info.duration!.inSeconds.toDouble(),
+          value: double.tryParse(block.source) ?? 0,
+          title: 'Start Duration',
+          headerWiget: Text('Duration: ${info.duration!.formatClockLabel()}'),
+          valueWidget: (value) => Text(
+            'Seconds: ${Duration(seconds: value.toInt()).formatClockLabel()}',
+          ),
+        ),
+      );
+      if (value == null) return;
+      blocks[index] = block.copyWith(
+        command: '-ss $value',
+        source: value.toString(),
+      );
+      if (!mounted) return;
+      setState(() {});
+      return;
+    }
+    if (block.id == 'End-Time') {
+      final value = await showDialog<double>(
+        context: context,
+        builder: (context) => SliderDialog(
+          max: info.duration!.inSeconds.toDouble(),
+          value: double.tryParse(block.source) ?? 0,
+          title: 'End Duration',
+          headerWiget: Text('Duration: ${info.duration!.formatClockLabel()}'),
+          valueWidget: (value) => Text(
+            'Seconds: ${Duration(seconds: value.toInt()).formatClockLabel()}',
+          ),
+        ),
+      );
+      if (value == null) return;
+      blocks[index] = block.copyWith(
+        command: '-to $value',
+        source: value.toString(),
+      );
+      if (!mounted) return;
+      setState(() {});
+    }
+  }
+
+  void editMeta(CommandBlock block, int index) async {
+    final name = await showPromptAlertDialog(
+      context,
+      block.source,
+      confirmText: 'Change',
+    );
+    if (name == null) return;
+    if (block.id == 'Metadata-Title') {
+      blocks[index] = block.copyWith(
+        source: name,
+        command: '-metadata title="$name"',
+      );
+    }
+    if (block.id == 'Metadata-Artist') {
+      blocks[index] = block.copyWith(
+        source: name,
+        command: '-metadata artist="$name"',
+      );
+    }
+    if (block.id == 'Metadata-Album') {
+      blocks[index] = block.copyWith(
+        source: name,
+        command: '-metadata album="$name"',
+      );
+    }
+    if (block.id == 'Metadata-Genre') {
+      blocks[index] = block.copyWith(
+        source: name,
+        command: '-metadata genre="$name"',
+      );
+    }
+    if (block.id == 'Metadata-Year') {
+      blocks[index] = block.copyWith(
+        source: name,
+        command: '-metadata date="$name"',
+      );
+    }
     if (!mounted) return;
     setState(() {});
   }
@@ -281,6 +430,9 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
           context,
           block.command,
           maxLines: null,
+          title: 'Command',
+          confirmText: 'Update',
+          barrierDismissible: false,
         );
         if (res == null) return;
         blocks[index] = block.copyWith(command: res);
@@ -309,46 +461,37 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.audio_file_outlined),
           ),
-
+        // volume
+        if (block.type == .volume && block.id == 'volume')
+          IconButton(
+            onPressed: () => editVolume(block, index),
+            tooltip: 'Change Volume',
+            visualDensity: VisualDensity.compact,
+            icon: Icon(block.type.iconData),
+          ),
+        if (block.type == .trim)
+          IconButton(
+            onPressed: () => editTrim(block, index),
+            tooltip: 'Change Volume',
+            visualDensity: VisualDensity.compact,
+            icon: Icon(block.type.iconData),
+          ),
+        if (block.type == .metadata)
+          IconButton(
+            onPressed: () => editMeta(block, index),
+            tooltip: 'Change Metadata',
+            visualDensity: VisualDensity.compact,
+            icon: Icon(block.type.iconData),
+          ),
         // output
-        if (block.type == .output)
+        if (block.type == .output && block.id == 'output')
           IconButton(
             onPressed: () => editOutputName(block, index),
             tooltip: 'Edit Name',
             visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.mode_edit_outline_sharp),
+            icon: Icon(block.type.iconData),
           ),
       ],
-    );
-  }
-}
-
-class _CommandViewPage extends StatelessWidget {
-  const new({required this.command});
-  final String command;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Command View'),
-        actions: [
-          IconButton(
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: command));
-              if (!context.mounted) return;
-              showSnackbar(context, 'Copid');
-            },
-            icon: Icon(Icons.copy_all_outlined),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SelectableText(command),
-        ),
-      ),
     );
   }
 }

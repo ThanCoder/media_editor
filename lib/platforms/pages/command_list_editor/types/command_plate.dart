@@ -17,10 +17,12 @@ class CommandPlateItem {
     required this.title,
     required this.desc,
     required this.command,
+    this.source=''
   });
 
   final String id;
   final String title;
   final String desc;
   final String command;
+  final String source;
 }
