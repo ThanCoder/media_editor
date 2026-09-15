@@ -7,10 +7,10 @@ import 'package:media_editor/core/utils/ffmpeg_utils.dart';
 import 'package:media_editor/platforms/chooser/video_chooser.dart';
 import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart';
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
-import 'package:media_editor/platforms/pages/command_list_editor/duration_slider_dialog.dart';
-import 'package:media_editor/platforms/pages/command_list_editor/start_end_range_slider_dialog.dart';
-import 'package:media_editor/platforms/pages/command_list_editor/command_block.dart';
-import 'package:media_editor/platforms/pages/command_list_editor/command_plate.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/dialog/duration_slider_dialog.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/dialog/start_end_range_slider_dialog.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/types/command_block.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/types/command_plate.dart';
 
 class CommandPlateWorkspaceManager {
   final BuildContext context;

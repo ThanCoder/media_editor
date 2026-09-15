@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:media_editor/platforms/pages/command_list_editor/command_plate.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/types/command_plate.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate_data.dart';
 
 class CommandPlateView extends StatelessWidget {
   const new({super.key, this.isWrap = false, this.onTap});
   final bool isWrap;
   final void Function(CommandPlate plate, CommandPlateItem item)? onTap;
+
+  static final expansionMap = <String, bool>{};
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,10 @@ class CommandPlateView extends StatelessWidget {
       builder: (context) {
         final col = Theme.of(context).colorScheme;
         return ExpansionTile(
+          initiallyExpanded: CommandPlateView.expansionMap[item.title] ?? false,
+          onExpansionChanged: (value) {
+            CommandPlateView.expansionMap[item.title] = value;
+          },
           leading: Icon(item.type.iconData, color: col.primary),
           title: Text(
             item.title,

@@ -42,7 +42,7 @@ class _AndroidAudioChooserPageState extends State<AndroidAudioChooserPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Pick Video')),
+      appBar: AppBar(title: Text('Pick Audio')),
       body: RefreshIndicator.adaptive(onRefresh: init, child: body),
     );
   }

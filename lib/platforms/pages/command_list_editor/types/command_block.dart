@@ -1,6 +1,6 @@
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 
-import 'block_type.dart';
+import '../block_type.dart';
 
 class CommandBlock {
   const CommandBlock({

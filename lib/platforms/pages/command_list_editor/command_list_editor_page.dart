@@ -3,22 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
 import 'package:media_editor/core/utils/ffmpeg_utils.dart';
-import 'package:media_editor/keys.dart';
+import 'package:media_editor/platforms/chooser/video_chooser.dart';
 import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart';
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
 import 'package:media_editor/platforms/components/dialog/snack_alert.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/block_type.dart';
-import 'package:media_editor/platforms/pages/command_list_editor/command_plate.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/types/command_list_editor_template.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/types/command_plate.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate_view.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate_workspace_manager.dart';
 import 'package:media_editor/platforms/pages/ffmpeg_process_page.dart';
 import 'package:t_widgets/t_widgets.dart';
 
-import 'command_block.dart';
+import 'types/command_block.dart';
 import 'command_block_widget.dart';
 
 class CommandListEditorPage extends StatefulWidget {
-  const CommandListEditorPage({super.key});
+  const CommandListEditorPage({super.key, this.template});
+  final CommandListEditorTemplate? template;
 
   @override
   State<CommandListEditorPage> createState() => _CommandListEditorPageState();
@@ -28,25 +30,16 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
   List<CommandBlock> blocks = [];
   ColorScheme get col => Theme.of(context).colorScheme;
   final config = AppUtils.instance.config;
+  String? title;
 
   @override
   void initState() {
-    blocks = config
-        .getMapList(commandListEditorPageBlockListKey)
-        .map((e) => CommandBlock.fromMap(e))
-        .toList();
+    final template = widget.template;
+    if (template != null) {
+      blocks = template.blocks;
+      title = template.title;
+    }
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    saveRecentBlock();
-    super.dispose();
-  }
-
-  void saveRecentBlock() {
-    final mapList = blocks.map((e) => e.toMap()).toList();
-    config.putAndWriteAll(commandListEditorPageBlockListKey, mapList);
   }
 
   bool get isCanRun {
@@ -135,10 +128,65 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
     );
   }
 
-  double _panelWidth = 230;
+  void wantToSaveProject() async {
+    context.pop<CommandListEditorTemplate>(
+      .new(
+        title: 'Recent',
+        desc: 'Recent Template',
+        blocks: blocks,
+        date: .now(),
+      ),
+    );
+  }
+
+  void chooseVideoFile(CommandBlock block, int index) async {
+    final path = await chooseMediaFileFromPlatform(
+      context,
+      dialogTitle: 'Pick Video',
+      type: .video,
+    );
+    if (path == null) return;
+    blocks[index] = block.copyWith(source: path, command: '-i $path');
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  void chooseAudioFile(CommandBlock block, int index) async {
+    final path = await chooseMediaFileFromPlatform(
+      context,
+      dialogTitle: 'Pick Audio',
+      type: .audio,
+    );
+    if (path == null) return;
+    blocks[index] = block.copyWith(source: path, command: '-i $path');
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  void editOutputName(CommandBlock block, int index) async {
+    final name = await showPromptAlertDialog(context, 'filename');
+    if (name == null) return;
+    blocks[index] = block.copyWith(
+      command: '-i ${AppUtils.instance.getPlatfromDownloadPath(name)}',
+    );
+    if (!mounted) return;
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        wantToSaveProject();
+      },
+      child: _layout(),
+    );
+  }
+
+  double _panelWidth = 230;
+  LayoutBuilder _layout() {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth >= 700;
@@ -180,7 +228,7 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
 
   AppBar _appbar() {
     return AppBar(
-      title: const Text('FFmpeg Blocks'),
+      title: Text(title ?? 'FFmpeg Blocks'),
       actions: [
         IconButton(
           onPressed: !isCanRun ? null : runProcess,
@@ -238,8 +286,39 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
         blocks[index] = block.copyWith(command: res);
         setState(() {});
       },
-      showInfoBtn: block.type == .input,
-      onInfoClicked: () => showBlockInfo(block),
+      actions: [
+        // input
+        if (block.type == .input && block.source.isNotEmpty)
+          IconButton(
+            onPressed: () => showBlockInfo(block),
+            tooltip: 'Info',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.info_outline),
+          ),
+        if (block.type == .input)
+          IconButton(
+            onPressed: () => chooseVideoFile(block, index),
+            tooltip: 'Choose Video',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.video_file_outlined),
+          ),
+        if (block.type == .input)
+          IconButton(
+            onPressed: () => chooseAudioFile(block, index),
+            tooltip: 'Choose Audio',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.audio_file_outlined),
+          ),
+
+        // output
+        if (block.type == .output)
+          IconButton(
+            onPressed: () => editOutputName(block, index),
+            tooltip: 'Edit Name',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.mode_edit_outline_sharp),
+          ),
+      ],
     );
   }
 }

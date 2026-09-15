@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:media_editor/platforms/pages/command_list_editor/command_block.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/types/command_block.dart';
 
 class CommandBlockWidget extends StatelessWidget {
   const CommandBlockWidget({
@@ -7,14 +7,12 @@ class CommandBlockWidget extends StatelessWidget {
     required this.block,
     this.onRemove,
     this.onEdit,
-    this.showInfoBtn = false,
-    this.onInfoClicked,
+    this.actions = const [],
   });
   final CommandBlock block;
   final VoidCallback? onRemove;
   final VoidCallback? onEdit;
-  final bool showInfoBtn;
-  final VoidCallback? onInfoClicked;
+  final List<Widget> actions;
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +45,10 @@ class CommandBlockWidget extends StatelessWidget {
                     ),
                   ),
                 ),
+                ...actions,
+                // if(actions.isEmpty)
                 // info
-                if (showInfoBtn)
-                  IconButton(
-                    onPressed: onInfoClicked,
-                    tooltip: 'Info',
-                    visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.info_outline),
-                  ),
+                 
 
                 // Remove
                 IconButton(

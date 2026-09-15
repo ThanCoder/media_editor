@@ -1,4 +1,4 @@
-import 'package:media_editor/platforms/pages/command_list_editor/command_plate.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/types/command_plate.dart';
 
 const commandPlateData = [
   CommandPlate(
