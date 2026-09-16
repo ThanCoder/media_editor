@@ -25,6 +25,7 @@ dependencies:
     git: https://github.com/ThanCoder/than_pkg_android.git
   path_provider: ^2.1.6
   uuid: ^4.6.0
+  url_launcher: ^6.3.2
 
 # flutter pub upgrade than_pkg_android t_widgets
 
@@ -63,8 +64,9 @@ ffmpeg_kit_extended_config:
   # Example:
   # windows: "path/to/ffmpeg-kit/libraries"
   # ios: "https://path/to/bundle.xcframework.zip"
-  android: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-full-shared-small-lgpl-release.aar
-  # android: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-base-shared-small-lgpl-release.aar
+  # android: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-full-shared-small-lgpl-release.aar
+  # linux: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-full-linux-x86_64-shared-lgpl.zip
+  android: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-base-shared-small-lgpl-release.aar
   linux: /home/thancoder/Downloads/ffmpeg-kit-builders/0.11.1/bundle-base-linux-x86_64-shared-small-lgpl.zip
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a

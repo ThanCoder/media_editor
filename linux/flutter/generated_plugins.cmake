@@ -7,6 +7,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   ffmpeg_kit_extended_flutter
   file_selector_linux
   than_pkg_linux
+  url_launcher_linux
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
