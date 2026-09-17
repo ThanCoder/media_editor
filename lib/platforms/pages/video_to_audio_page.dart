@@ -17,6 +17,7 @@ import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart
 import 'package:media_editor/platforms/components/dialog/success_alert_dialog.dart';
 import 'package:media_editor/platforms/components/forms/input_text.dart';
 import 'package:media_editor/platforms/pages/ffmpeg_process_page.dart';
+import 'package:media_editor/platforms/pages/video_player_page.dart';
 import 'package:t_widgets/t_widgets.dart';
 
 class VideoToAudioPage extends StatefulWidget {
@@ -215,6 +216,20 @@ class _VideoToAudioPageState extends State<VideoToAudioPage> {
               showSuccessDialog(context, commandResult, title: 'Command');
             },
             icon: Icon(Icons.info_outline_rounded),
+          ),
+        SizedBox(width: 10),
+        if (choosedPath != null)
+          IconButton(
+            style: IconButton.styleFrom(
+              backgroundColor: col.tertiary,
+              foregroundColor: col.onTertiary,
+            ),
+            onPressed: () {
+              context.pushMaterialPageRoute(
+                builder: (mainCtx) => VideoPlayerPage(path: choosedPath!),
+              );
+            },
+            icon: Icon(Icons.play_circle_fill),
           ),
         SizedBox(width: 10),
 

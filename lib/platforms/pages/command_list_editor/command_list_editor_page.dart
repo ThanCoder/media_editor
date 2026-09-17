@@ -2,18 +2,21 @@ import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
 import 'package:media_editor/core/utils/ffmpeg_utils.dart';
+import 'package:media_editor/keys.dart';
 import 'package:media_editor/platforms/chooser/video_chooser.dart';
 import 'package:media_editor/platforms/components/dialog/error_alert_dialog.dart';
 import 'package:media_editor/platforms/components/dialog/prompt_alert_dialog.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/block_type.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_list_editor_code_view_page.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/dialog/slider_dialog.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/workspace/edit_trim_workspace.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/types/command_list_editor_template.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/types/command_plate.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate_view.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_plate_workspace_manager.dart';
 import 'package:media_editor/platforms/pages/ffmpeg_process_page.dart';
 import 'package:t_widgets/t_widgets.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import 'types/command_block.dart';
 import 'command_block_widget.dart';
@@ -47,7 +50,8 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
     final types = blocks.map((e) => e.type);
 
     final hasInput = types.contains(BlockType.input);
-    final hasOutput = blocks.last.type == .output;
+    final hasOutput =
+        blocks.last.type == .output && blocks.last.source.isNotEmpty;
 
     return hasInput && hasOutput;
   }
@@ -200,85 +204,14 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
   }
 
   void editTrim(CommandBlock block, int index) async {
-    final inputIndex = blocks.indexWhere((e) => e.type == .input);
-    if (inputIndex == -1) {
-      showErrorDialog(context, 'At least one input file is required!');
-      return;
-    }
-    final info = await FfmpegUtils.getInfo(blocks[inputIndex].source);
+    await EditTrimWorkspace(
+      context: context,
+      blocks: blocks,
+      block: block,
+      index: index,
+    ).run();
     if (!mounted) return;
-    if (info == null) {
-      showErrorDialog(
-        context,
-        'Failed to get the duration from the input file.!',
-      );
-      return;
-    }
-    if (block.id == 'duration') {
-      final value = await showDialog<double>(
-        context: context,
-        builder: (context) => SliderDialog(
-          max: info.duration!.inSeconds.toDouble(),
-          value: double.tryParse(block.source) ?? 0,
-          title: 'Duration',
-          headerWiget: Text('Duration: ${info.duration!.formatClockLabel()}'),
-          valueWidget: (value) => Text(
-            'Seconds: ${Duration(seconds: value.toInt()).formatClockLabel()}',
-          ),
-        ),
-      );
-      if (value == null) return;
-      blocks[index] = block.copyWith(
-        command: '-t $value',
-        source: value.toString(),
-      );
-      if (!mounted) return;
-      setState(() {});
-      return;
-    }
-    if (block.id == 'start-time') {
-      final value = await showDialog<double>(
-        context: context,
-        builder: (context) => SliderDialog(
-          max: info.duration!.inSeconds.toDouble(),
-          value: double.tryParse(block.source) ?? 0,
-          title: 'Start Duration',
-          headerWiget: Text('Duration: ${info.duration!.formatClockLabel()}'),
-          valueWidget: (value) => Text(
-            'Seconds: ${Duration(seconds: value.toInt()).formatClockLabel()}',
-          ),
-        ),
-      );
-      if (value == null) return;
-      blocks[index] = block.copyWith(
-        command: '-ss $value',
-        source: value.toString(),
-      );
-      if (!mounted) return;
-      setState(() {});
-      return;
-    }
-    if (block.id == 'End-Time') {
-      final value = await showDialog<double>(
-        context: context,
-        builder: (context) => SliderDialog(
-          max: info.duration!.inSeconds.toDouble(),
-          value: double.tryParse(block.source) ?? 0,
-          title: 'End Duration',
-          headerWiget: Text('Duration: ${info.duration!.formatClockLabel()}'),
-          valueWidget: (value) => Text(
-            'Seconds: ${Duration(seconds: value.toInt()).formatClockLabel()}',
-          ),
-        ),
-      );
-      if (value == null) return;
-      blocks[index] = block.copyWith(
-        command: '-to $value',
-        source: value.toString(),
-      );
-      if (!mounted) return;
-      setState(() {});
-    }
+    setState(() {});
   }
 
   void editMeta(CommandBlock block, int index) async {
@@ -389,12 +322,19 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
           icon: const Icon(Icons.code),
           tooltip: 'View Command',
         ),
+        IconButton(
+          onPressed: () {
+            launchUrlString(ffmpegDocUrl);
+          },
+          icon: const Icon(Icons.info_outline_rounded),
+          tooltip: 'Read Doc',
+        ),
       ],
     );
   }
 
   Widget blockPlate({bool isWrap = false}) {
-    return CommandPlateView(isWrap: isWrap, onTap: onPlateClicked);
+    return CommandPlateView(onTap: onPlateClicked);
   }
 
   Widget get listWidget {
@@ -472,7 +412,7 @@ class _CommandListEditorPageState extends State<CommandListEditorPage> {
         if (block.type == .trim)
           IconButton(
             onPressed: () => editTrim(block, index),
-            tooltip: 'Change Volume',
+            tooltip: 'Trim',
             visualDensity: VisualDensity.compact,
             icon: Icon(block.type.iconData),
           ),

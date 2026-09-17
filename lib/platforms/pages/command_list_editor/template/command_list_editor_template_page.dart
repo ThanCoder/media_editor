@@ -1,17 +1,19 @@
 import 'dart:io';
 
 import 'package:cfb_store/cfb_store.dart';
+import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
 import 'package:media_editor/keys.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/command_list_editor_page.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/dialog/template_save_dialog.dart';
+import 'package:media_editor/platforms/pages/command_list_editor/template/template_api.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/template/template_data.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/types/command_list_editor_template.dart';
 import 'package:t_widgets/t_widgets.dart';
 import 'package:than_pkg_android/than_pkg_android.dart';
 
-enum _ShowTemplateType { template, saved }
+enum _ShowTemplateType { template, api, saved }
 
 class CommandListEditorTemplatePage extends StatefulWidget {
   const CommandListEditorTemplatePage({super.key});
@@ -58,7 +60,7 @@ class _CommandListEditorTemplatePageState
     init();
   }
 
-  void init() async {
+  Future<void> init() async {
     if (Platform.isAndroid) {
       if (!await ThanPkgAndroid.getInstance.storagePermissionHandler
           .isStoragePermissionGranted()) {
@@ -104,22 +106,27 @@ class _CommandListEditorTemplatePageState
       appBar: AppBar(
         title: const Text('Editor Templates'),
         actions: [
-          FilledButton.icon(
-            label: Text('Refresh Storage'),
-            onPressed: init,
-            icon: Icon(Icons.refresh_outlined),
-          ),
+          if (TPlatform.isDesktop)
+            FilledButton.icon(
+              label: Text('Refresh Storage'),
+              onPressed: init,
+              icon: Icon(Icons.refresh_outlined),
+            ),
           SizedBox(width: 10),
         ],
       ),
-      body: CustomScrollView(
-        slivers: [
-          // New project
-          SliverToBoxAdapter(child: _newProject()),
-          SliverToBoxAdapter(child: _recentTemplate()),
-          SliverToBoxAdapter(child: _header()),
-          _list(),
-        ],
+      body: RefreshIndicator.adaptive(
+        onRefresh: init,
+        child: CustomScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // New project
+            SliverToBoxAdapter(child: _newProject()),
+            SliverToBoxAdapter(child: _recentTemplate()),
+            SliverToBoxAdapter(child: _header()),
+            _list(),
+          ],
+        ),
       ),
     );
   }
@@ -137,14 +144,10 @@ class _CommandListEditorTemplatePageState
             },
             segments: [
               .new(value: .template, label: Text('Template')),
+              .new(value: .api, label: Text('Api')),
               .new(value: .saved, label: Text('Saved')),
             ],
           ),
-          // Text(
-          //   'Templates',
-          //   style: Theme.of(context).textTheme.titleMedium
-          //       ?.copyWith(fontWeight: FontWeight.w600),
-          // ),
         ],
       ),
     );
@@ -158,26 +161,54 @@ class _CommandListEditorTemplatePageState
         if (current == .saved) {
           list = CommandListEditorTemplatePage.list;
         }
-        return SliverList.builder(
-          itemCount: list.length,
-          itemBuilder: (context, index) => _TemplateCard(
-            template: list[index],
-            useTemplate: useTemplate,
-            leftButton: current == .saved
-                ? FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: col.errorContainer,
-                      foregroundColor: col.onErrorContainer,
+        if (current == .api) {
+          return FutureBuilder(
+            future: TemplateApi.getList(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == .waiting) {
+                return SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator.adaptive()),
+                );
+              }
+              final res = snapshot.data ?? [];
+              if (res.isEmpty) {
+                return SliverFillRemaining(
+                  child: Center(
+                    child: RefreshButton(
+                      text: Text('Refetch'),
+                      onClicked: () => setState(() {}),
                     ),
-                    onPressed: () {
-                      CommandListEditorTemplatePage.remove(list[index]);
-                    },
-                    child: Text('Remove'),
-                  )
-                : null,
-          ),
-        );
+                  ),
+                );
+              }
+              return _listWidget(res);
+            },
+          );
+        }
+        return _listWidget(list);
       },
+    );
+  }
+
+  SliverList _listWidget(List<CommandListEditorTemplate> list) {
+    return SliverList.builder(
+      itemCount: list.length,
+      itemBuilder: (context, index) => _TemplateCard(
+        template: list[index],
+        useTemplate: useTemplate,
+        leftButton: current == .saved
+            ? FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: col.errorContainer,
+                  foregroundColor: col.onErrorContainer,
+                ),
+                onPressed: () {
+                  CommandListEditorTemplatePage.remove(list[index]);
+                },
+                child: Text('Remove'),
+              )
+            : null,
+      ),
     );
   }
 
@@ -334,11 +365,11 @@ class _TemplateCard extends StatelessWidget {
 
             ?leftButton,
             if (leftButton != null) SizedBox(width: 10),
-
-            FilledButton(
-              onPressed: () => useTemplate(template),
-              child: const Text('Use'),
-            ),
+            if (template.blocks.isNotEmpty)
+              FilledButton(
+                onPressed: () => useTemplate(template),
+                child: const Text('Use'),
+              ),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:dart_core_extensions/dart_core_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:media_editor/core/utils/app_utils.dart';
+import 'package:media_editor/platforms/pages/audio_to_audio.dart';
 import 'package:media_editor/platforms/pages/command_list_editor/template/command_list_editor_template_page.dart';
 import 'package:media_editor/platforms/pages/command_pages/ffmpeg_command_page.dart';
 import 'package:media_editor/platforms/pages/video_to_audio_page.dart';
@@ -25,11 +26,11 @@ class _PlatformHomePageState extends State<PlatformHomePage> {
               .join(' '),
         ),
       ),
-      body: _buttons(),
+      body: SingleChildScrollView(child: _body()),
     );
   }
 
-  Widget _buttons() {
+  Widget _body() {
     // final col = Theme.of(context).colorScheme;
 
     return Center(
@@ -44,6 +45,16 @@ class _PlatformHomePageState extends State<PlatformHomePage> {
             onTap: () {
               context.pushMaterialPageRoute(
                 builder: (mainCtx) => VideoToAudioPage(),
+              );
+            },
+          ),
+          _actionCard(
+            icon: Icons.audio_file_outlined,
+            title: 'Audio To Audio',
+            subtitle: 'Convert audio files to audio',
+            onTap: () {
+              context.pushMaterialPageRoute(
+                builder: (mainCtx) => AudioToAudio(),
               );
             },
           ),

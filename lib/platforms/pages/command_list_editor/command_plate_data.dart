@@ -143,6 +143,27 @@ const commandPlateData = [
         command: '-metadata date="{year}"',
         source: 'year',
       ),
+      CommandPlateItem(
+        id: 'Metadata-Comment',
+        title: 'Comment',
+        desc: 'Set the media comment metadata.',
+        command: '-metadata comment="{comment}"',
+        source: 'comment',
+      ),
+
+      CommandPlateItem(
+        id: 'Metadata-Copy',
+        title: 'Copy Metadata',
+        desc: 'Copy metadata from the input file.',
+        command: '-map_metadata 0',
+      ),
+
+      CommandPlateItem(
+        id: 'Metadata-Clear',
+        title: 'Remove Metadata',
+        desc: 'Remove metadata from the output file.',
+        command: '-map_metadata -1',
+      ),
     ],
   ),
 
@@ -593,34 +614,6 @@ const commandPlateData = [
         title: 'Copy Subtitles',
         desc: 'Copy subtitle streams without re-encoding.',
         command: '-c:s copy',
-      ),
-    ],
-  ),
-
-  CommandPlate(
-    title: 'Metadata',
-    type: .metadata,
-    children: [
-      CommandPlateItem(
-        id: 'Metadata-Comment',
-        title: 'Comment',
-        desc: 'Set the media comment metadata.',
-        command: '-metadata comment="{comment}"',
-        source: 'comment',
-      ),
-
-      CommandPlateItem(
-        id: 'Metadata-Copy',
-        title: 'Copy Metadata',
-        desc: 'Copy metadata from the input file.',
-        command: '-map_metadata 0',
-      ),
-
-      CommandPlateItem(
-        id: 'Metadata-Clear',
-        title: 'Remove Metadata',
-        desc: 'Remove metadata from the output file.',
-        command: '-map_metadata -1',
       ),
     ],
   ),
