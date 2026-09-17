@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:media_editor/platforms/pages/command_list_editor/types/command_block.dart';
-import 'package:media_editor/platforms/pages/command_list_editor/types/command_plate.dart';
 
 abstract class IWorkspace {
   final BuildContext context;
