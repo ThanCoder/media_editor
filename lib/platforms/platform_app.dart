@@ -1,0 +1,64 @@
+import 'package:cfb_store/cfb_store.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:media_editor/keys.dart';
+import 'package:media_editor/platforms/platform_app_switcher.dart';
+import 'package:media_editor/ui/theme/theme_provider.dart';
+
+class PlatformApp extends StatefulWidget {
+  const PlatformApp({super.key});
+
+  @override
+  State<PlatformApp> createState() => _PlatformAppState();
+}
+
+class _PlatformAppState extends State<PlatformApp> {
+  final cf = CFBStore.instance;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialThemeProvider(
+      getTheme: () =>
+          MaterialThemeProviderType.fromName(cf.getString(appThemeKey)),
+      onChanged: (MaterialThemeProviderType type) {
+        cf.putAndWriteAll(appThemeKey, type.name);
+      },
+      child: PlatformAppSwitcher(),
+    );
+
+    // return StreamBuilder(
+    //   stream: cf.stream.put.where(
+    //     (e) => e.key == appSeedsColorEnableKey || e.key == appSeedsColorIntKey,
+    //   ),
+    //   builder: (context, asyncSnapshot) {
+    //     final seedInt = cf.getInt(appSeedsColorIntKey);
+    //     final colorEnable = cf.getBool(appSeedsColorEnableKey);
+    //     final enable = colorEnable && seedInt != 0;
+
+    //     return MaterialThemeProvider(
+    //       theme: !enable
+    //           ? null
+    //           : .light(useMaterial3: true).copyWith(
+    //               colorScheme: .fromSeed(
+    //                 seedColor: Color(seedInt),
+    //                 brightness: .light,
+    //               ),
+    //             ),
+    //       darkTheme: !enable
+    //           ? null
+    //           : .dark(useMaterial3: true).copyWith(
+    //               colorScheme: .fromSeed(
+    //                 seedColor: Color(seedInt),
+    //                 brightness: .dark,
+    //               ),
+    //             ),
+    //       getTheme: () =>
+    //           MaterialThemeProviderType.fromName(cf.getString(appThemeKeys)),
+    //       onChanged: (MaterialThemeProviderType type) {
+    //         cf.putAndWriteAll(appThemeKeys, type.name);
+    //       },
+    //       child: PlatformAppSwitcher(),
+    //     );
+    //   },
+    // );
+  }
+}
