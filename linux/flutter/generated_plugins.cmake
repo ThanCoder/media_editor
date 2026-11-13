@@ -3,9 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  desktop_drop
-  ffmpeg_kit_extended_flutter
-  file_selector_linux
   than_pkg_linux
   url_launcher_linux
 )
