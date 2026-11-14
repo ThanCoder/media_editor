@@ -3,7 +3,7 @@ import 'package:media_editor/platforms/pages/more/app_about_dialog.dart';
 import 'package:media_editor/ui/components/scrollable_columm.dart';
 import 'package:media_editor/ui/theme/theme_provider.dart';
 
-import 'dev_pages/dev_home_page.dart';
+import '../dev_pages/dev_home_page.dart';
 import 'version_manager.dart';
 
 class MorePage extends StatelessWidget {

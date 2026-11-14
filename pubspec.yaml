@@ -15,7 +15,7 @@ dependencies:
   cupertino_icons: ^2.0.0
   than_pkg_linux: ^0.3.0
   cfb_store: ^0.8.0
-  dart_core_extensions: ^0.8.0
+  dart_core_extensions: ^0.9.0
   file_picker: ^13.3.3
   file_type_plus: ^1.1.0
   package_info_plus: ^10.2.1
@@ -26,9 +26,11 @@ dependencies:
   than_pkg_android:
     git: https://github.com/ThanCoder/than_pkg_android.git
   t_client:
-    git: https://github.com/ThanCoder/t_client
-
-# flutter pub upgrade --major-versions
+    git: https://github.com/ThanCoder/t_client.git
+  ffmpeg_bin: ^0.2.0
+  # ffmpeg_bin:
+  #   git: https://github.com/ThanCoder/ffmpeg_bin.git
+  # flutter pub upgrade --major-versions
 
 dev_dependencies:
   flutter_test:

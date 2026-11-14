@@ -9,14 +9,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.6"
+  android_native_path:
+    dependency: transitive
+    description:
+      name: android_native_path
+      sha256: "8df2ef323ebc1def63b62ee4a55199e5f170f7f81a22881129d8d91cc03c662f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   archive:
     dependency: transitive
     description:
       name: archive
-      sha256: "4bb7d60637561012df2a7b04e48bcc2485e849e81048dc075a6d45b95c342910"
+      sha256: "2fda90592c0afd219c5e285618a98da835cd10df38372666093d25dfe457a2d0"
       url: "https://pub.dev"
     source: hosted
-    version: "4.7.0"
+    version: "4.7.1"
   args:
     dependency: transitive
     description:
@@ -141,10 +149,10 @@ packages:
     dependency: "direct main"
     description:
       name: dart_core_extensions
-      sha256: "4cf4bf107dfb509cf315564320c9c31f5d730a4c37a4954d3480c641ed74e432"
+      sha256: "1036de880fafeb5284247d0ebcbb5254100a778ab765850e994fd762637f6416"
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.0"
+    version: "0.9.0"
   dbus:
     dependency: transitive
     description:
@@ -185,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.2"
+  ffmpeg_bin:
+    dependency: "direct main"
+    description:
+      name: ffmpeg_bin
+      sha256: "4bd49af420cca806b4c43e9f94abccf7aa67bae892bec4824204302968d39426"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   file_picker:
     dependency: "direct main"
     description:
@@ -616,7 +632,7 @@ packages:
       path: "."
       ref: HEAD
       resolved-ref: "6c144036a8abc514520e16f3c7caafe51a5b5ba3"
-      url: "https://github.com/ThanCoder/t_client"
+      url: "https://github.com/ThanCoder/t_client.git"
     source: git
     version: "0.3.0"
   term_glyph:
@@ -640,10 +656,10 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: a5297a62fd14568cb55c34530711b1b09285af01
+      resolved-ref: "53aa84dc652966d163c3046ca3175054c7770415"
       url: "https://github.com/ThanCoder/than_pkg_android.git"
     source: git
-    version: "0.7.0"
+    version: "0.9.0"
   than_pkg_linux:
     dependency: "direct main"
     description:
@@ -798,4 +814,4 @@ packages:
     version: "3.1.4"
 sdks:
   dart: ">=3.14.0 <4.0.0"
-  flutter: ">=3.47.0"
+  flutter: ">=3.50.0"

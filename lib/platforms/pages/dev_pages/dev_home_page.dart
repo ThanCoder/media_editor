@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../ui/index.dart';
+import '../../../ui/index.dart';
 import 'dev_page.dart';
 
 part 'dev_page_api.dart';
